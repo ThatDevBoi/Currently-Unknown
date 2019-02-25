@@ -206,13 +206,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 325617862}
-  m_LocalRotation: {x: -0, y: -0.24073435, z: -0, w: 0.97059107}
-  m_LocalPosition: {x: 0.8340001, y: 1.458, z: -0.679}
+  m_LocalRotation: {x: -0, y: -0.78184617, z: -0, w: 0.6234715}
+  m_LocalPosition: {x: 4.337, y: 1.458, z: 1.72}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 472016758}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: -27.86, z: 0}
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: -102.86001, z: 0}
 --- !u!81 &325617864
 AudioListener:
   m_ObjectHideFlags: 0
@@ -269,12 +269,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1629061578}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &472016758 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 400138, guid: e39ae7800f395e74fbadad3fe0adc366,
-    type: 3}
-  m_PrefabInstance: {fileID: 1629061578}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &472016759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -296,6 +290,7 @@ MonoBehaviour:
   PC_Eyes_Camera: {fileID: 0}
   canMove: 1
   anim: {fileID: 0}
+  bodyPunch: 0
   NPC_target: {fileID: 0}
 --- !u!1 &1215103446
 GameObject:
@@ -387,7 +382,7 @@ Transform:
   m_LocalScale: {x: 2.3552, y: 2.3552, z: 2.3552}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1629061578
 PrefabInstance:
@@ -430,7 +425,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400138, guid: e39ae7800f395e74fbadad3fe0adc366, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 400138, guid: e39ae7800f395e74fbadad3fe0adc366, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -448,5 +443,13 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 21d0c018b185d3c4f9c1cdecdc17d97b, type: 2}
+    - target: {fileID: 9500000, guid: e39ae7800f395e74fbadad3fe0adc366, type: 3}
+      propertyPath: m_CullingMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9500000, guid: e39ae7800f395e74fbadad3fe0adc366, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e39ae7800f395e74fbadad3fe0adc366, type: 3}

@@ -40,6 +40,8 @@ public class DB_Base_Class : MonoBehaviour
     protected bool canMove = true;
     [SerializeField]    // Remove
     private Animator anim;
+    [SerializeField]
+    protected bool bodyPunch = false;
 
 
     // Start is called before the first frame update
@@ -119,6 +121,18 @@ public class DB_Base_Class : MonoBehaviour
             if(Input.GetButtonUp("Jump"))
             {
                 anim.SetBool("Jabbing", false);
+            }
+        }
+
+        if(Input.GetButtonDown("Fire1"))
+        {
+            anim.SetBool("Body Punch", true);
+        }
+        else
+        {
+            if(Input.GetButtonUp("Fire1"))
+            {
+                anim.SetBool("Body Punch", false);
             }
         }
         
