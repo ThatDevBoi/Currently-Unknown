@@ -20,7 +20,7 @@ using UnityEngine;
 // First Person Camera
 // No Rotation Just Moving at an Angle
 
-public class DB_Base_Class : MonoBehaviour
+public abstract class DB_Base_Class : MonoBehaviour
 {
     [SerializeField]
     protected SphereCollider PC_RightHand_SC;
@@ -40,6 +40,17 @@ public class DB_Base_Class : MonoBehaviour
     private Animator anim;
     [SerializeField]
     protected bool bodyPunch = false;
+
+    // Melee combat Variables
+    [SerializeField]
+    protected float fl_knockBackForce;
+    [SerializeField]
+    protected float fl_knockBackTime;
+    protected float fl_knockBackCounter;
+
+    public int currentStamina;
+    public int maxStamina = 200;
+
 
 
     #region Camera Variables 
@@ -73,9 +84,12 @@ public class DB_Base_Class : MonoBehaviour
         #region Character Controller
         PC_CC = gameObject.AddComponent<CharacterController>();     // Adds a character controller componenet
         PC_CC.center = new Vector3(0, 1f, 0);
+        PC_CC.skinWidth = 0.0325f;
         #endregion
 
         anim = gameObject.GetComponent<Animator>();
+
+        currentStamina = maxStamina;
 
     }
 
@@ -85,6 +99,7 @@ public class DB_Base_Class : MonoBehaviour
         // Call Functions
         Movement();
         Melee_Combat();
+
     }
 
     #region Camera Functions
@@ -152,10 +167,25 @@ public class DB_Base_Class : MonoBehaviour
     #region Movement Function
     protected virtual void Movement()
     {
-        // Allow speed float to hold input on keyboard forward and backwards
-        speed = Input.GetAxis("Vertical");  // Speed takes into the account of the input needed to move
-        anim.SetFloat("Speed", speed);      // Value in script of speed is now the animation float value of speed
-        PC_CC.Move(transform.forward * Time.deltaTime * speed);     // Monitor speed when we move and so we know how fast we move
+        // if the knockBackCounter equals 0 or less than we can move
+        if (fl_knockBackCounter <= 0)
+        {
+            // Movement Logic
+            moveDirection = (transform.forward * Input.GetAxis("Vertical")) + (transform.right * Input.GetAxis("Horizontal"));
+            moveDirection = moveDirection.normalized * speed * Side_step;
+            moveDirection.y = moveDirection.y + Physics.gravity.y;  // Make sure CC isnt allowed to move current model up
+            PC_CC.Move(moveDirection * Time.deltaTime);     // Allows the player to move forward in the x and z axis
+        }
+        else
+        {
+            // Decrease the time if we arent at 0 or passed it on the knockBackCounter
+            fl_knockBackTime -= Time.deltaTime;
+        }
+
+        // Animations being detected
+        anim.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Vertical")));      // Value in script of speed is now the animation float value of speed
+        // Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
+        anim.SetFloat("Side Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
 
         // if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
         if (Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
@@ -169,12 +199,8 @@ public class DB_Base_Class : MonoBehaviour
             // parameter animator boolean is not true and new animation plays depending on what you set next
             anim.SetBool("SideStrife", false);
         }
-        // the Side step float carries the information for player input
-        Side_step = Input.GetAxis("Horizontal");
-        // Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
-        anim.SetFloat("Side Speed", Side_step);
-        // Move the Character with the character controller 
-        PC_CC.Move(transform.right * Time.deltaTime * Side_step);
+        
+        
     }
     #endregion
 
@@ -184,7 +210,6 @@ public class DB_Base_Class : MonoBehaviour
     // However players can use the base class version in the Player Controller
     //The Function is allows players and NPC to push eachother back with force.
     #endregion
-    
     #region Melee Combat Function
     protected virtual void Melee_Combat()
     {
@@ -192,6 +217,7 @@ public class DB_Base_Class : MonoBehaviour
         // Change this button later
         if (Input.GetButtonDown("Jump"))
         {
+            currentStamina -= 5;
             anim.SetBool("Jabbing", true);
         }
         else
@@ -204,6 +230,7 @@ public class DB_Base_Class : MonoBehaviour
         // Change this button later
         if(Input.GetButtonDown("Fire1"))
         {
+            currentStamina -= 10;
             anim.SetBool("Body Punch", true);
         }
         else
@@ -213,10 +240,12 @@ public class DB_Base_Class : MonoBehaviour
                 anim.SetBool("Body Punch", false);
             }
         }
+
+
     }
     #endregion
 
-    #region
+    #region notes
     // This function allows NPC or Player to pick up an object to use in a fight
     // However might be taken away and instead use power up pickups
     #endregion
@@ -226,24 +255,25 @@ public class DB_Base_Class : MonoBehaviour
 
     }
     #endregion
-    #region Stamina Monitor Function
-    // This function will be used to monitor how much energy is left in the fighter
-    // PC and NPC figters will have this bar using a UI slider to visually show it.
-    // More stamina you have the more power in your punch
-    // No stamina means you cant move and your punches are pointless 
-    // It leaves more strategic thinking on the players behalf
-    #endregion
+
+    public void KnockBack(Vector3 direction)
+    {
+        // Knock Back Logic
+        // For however long the knock back timer is we dont want to move
+        fl_knockBackCounter = fl_knockBackTime;
+        moveDirection = direction * fl_knockBackForce;
+    }
+
+    //// This function will be used to monitor how much energy is left in the fighter
+    //// PC and NPC figters will have this bar using a UI slider to visually show it.
+    //// More stamina you have the more power in your punch
+    //// No stamina means you cant move and your punches are pointless 
+    //// It leaves more strategic thinking on the players behalf
+    //#endregion
     #region Stamina Monitor Function
     protected virtual void StaminaBar()
     {
-
+        // This will calculate how much power the player pushes the Enemy depending on the current stamina 
     }
     #endregion
-    protected virtual void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (hit.gameObject.tag == "Enemy")
-        {
-            Debug.Log("Hit");
-        }
-    }
 }

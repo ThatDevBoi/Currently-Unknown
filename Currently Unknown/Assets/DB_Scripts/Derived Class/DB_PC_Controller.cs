@@ -5,6 +5,9 @@ using UnityEngine;
 public class DB_PC_Controller : DB_Base_Class
 {
     public Transform NPC_target;
+
+    public int damageToGive = 20;
+
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -17,13 +20,9 @@ public class DB_PC_Controller : DB_Base_Class
         base.Update();
     }
 
-    protected override void Melee_Combat()
+    public void StaminaHurt(int staminaDamage, Vector3 direction)
     {
-        base.Melee_Combat();
-    }
-
-    protected override void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        base.OnControllerColliderHit(hit);
+        currentStamina -= staminaDamage;
+        KnockBack(direction);
     }
 }
