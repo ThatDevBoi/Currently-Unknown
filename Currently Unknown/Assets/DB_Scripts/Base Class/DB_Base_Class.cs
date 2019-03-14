@@ -19,7 +19,9 @@ using UnityEngine;
 // Using A Character Controller would make moving more smooth
 // First Person Camera
 // No Rotation Just Moving at an Angle
-
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
+[RequireComponent(typeof(Animator))]
 public abstract class DB_Base_Class : MonoBehaviour
 {
     [SerializeField]
@@ -27,13 +29,24 @@ public abstract class DB_Base_Class : MonoBehaviour
     [SerializeField]
     protected SphereCollider PC_LeftHand_SC;
     [SerializeField]
-    protected CharacterController PC_CC;
+    protected CapsuleCollider player_Capsule;
+    [SerializeField]
+    protected Rigidbody playerRB;
     [SerializeField]
     protected float speed = 5;
     [SerializeField]
-    protected float Side_step = 3;
+    protected float maxSpeed = 3;
+    [SerializeField]
+    protected float gravity = 15;
+    [SerializeField]
+    protected float RBmass = 2;
+
+    //[SerializeField]
+    //protected float Side_step = 3;
     [SerializeField]
     protected Vector3 moveDirection = Vector3.zero;
+    [SerializeField]
+    protected Vector3 impactDirection = Vector3.zero;
     [SerializeField]    // Remove
     protected bool canMove = true;
     [SerializeField]    // Remove
@@ -43,29 +56,97 @@ public abstract class DB_Base_Class : MonoBehaviour
 
     // Melee combat Variables
     [SerializeField]
-    protected float fl_knockBackForce;
+    protected float Hitmass = 5;    // Used to devide the force depending on the players stamina
+    //[SerializeField]
+    //protected float force = 3;  // Remove
     [SerializeField]
-    protected float fl_knockBackTime;
-    protected float fl_knockBackCounter;
+    protected float pushForce = 30;
+    [SerializeField]
+    protected float fl_knockBackTime;   // Used so players can get spammed with punches
+    protected float fl_knockBackCounter;    // 
 
     public int currentStamina;
     public int maxStamina = 200;
 
+    [SerializeField]
+    public class Camera_Movement : MonoBehaviour
+    {
+        #region Camera Variables 
+        public List<Transform> targets;
+        public Vector3 offset;
+        public float smoothTime = .5f;
 
+        public float minZoom = 40f;
+        public float maxZoom = 10f;
+        public float zoomLimiter = 50f;
 
-    #region Camera Variables 
-    public List<Transform> targets;
-    public Vector3 offset;
-    public float smoothTime = .5f;
+        protected Camera cam;
 
-    public float minZoom = 40f;
-    public float maxZoom = 10f;
-    public float zoomLimiter = 50f;
+        private Vector3 velocity;
+        #endregion
 
-    protected Camera cam;
+        #region Camera Functions
+        #region LateUpdate Function
+        protected virtual void LateUpdate()
+        {
+            if (targets.Count == 0)
+                return;
 
-    private Vector3 velocity;
-    #endregion
+            CameraMove();
+            Zoom();
+        }
+        #endregion
+
+        #region Camera Move
+        void CameraMove()
+        {
+            Vector3 centerPoint = GetCenterPoint();
+
+            Vector3 newPosition = centerPoint + offset;
+
+            transform.position = Vector3.SmoothDamp(transform.position, newPosition, ref velocity, smoothTime);
+        }
+        #endregion
+
+        #region Zoom Function
+        void Zoom()
+        {
+            float newZoom = Mathf.Lerp(maxZoom, minZoom, GetGreatestDistance() / zoomLimiter);
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, newZoom, Time.deltaTime);
+        }
+        #endregion
+
+        #region Greatest Distance Functions
+        float GetGreatestDistance()
+        {
+            var bounds = new Bounds(targets[0].position, Vector3.zero);
+            for (int i = 0; i < targets.Count; i++)
+            {
+                bounds.Encapsulate(targets[i].position);
+            }
+
+            return bounds.size.x;
+        }
+        #endregion
+
+        #region CenterPoint Function
+        protected virtual Vector3 GetCenterPoint()
+        {
+            if (targets.Count == 1)
+            {
+                return targets[0].position;
+            }
+
+            var bounds = new Bounds(targets[0].position, Vector3.zero);
+            for (int i = 0; i < targets.Count; i++)
+            {
+                bounds.Encapsulate(targets[i].position);
+            }
+            return bounds.center;
+        }
+        #endregion
+        #endregion
+    }
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -81,14 +162,37 @@ public abstract class DB_Base_Class : MonoBehaviour
         PC_LeftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Resize SphereCollider
         PC_LeftHand_SC.radius = 0.07f;
         #endregion
-        #region Character Controller
-        PC_CC = gameObject.AddComponent<CharacterController>();     // Adds a character controller componenet
-        PC_CC.center = new Vector3(0, 1f, 0);
-        PC_CC.skinWidth = 0.0325f;
+        #region Rigidbody Setup
+        playerRB = gameObject.AddComponent<Rigidbody>();     // Adds Rigidbody compoenent into the IDE we need it to apply physics 
+        playerRB.useGravity = true;
+        playerRB.isKinematic = false;
+        // This makes sure on start the Rigidbodys rotation turns off. We want fights to move in straight lines standing toe to toe
+        // If we apply rotation then objects wont always be facing eachother
+        playerRB.constraints = RigidbodyConstraints.FreezeRotation;
+        playerRB.mass = 2f;
+        playerRB.drag = 0;
+        playerRB.angularDrag = 0.05f;
         #endregion
 
-        anim = gameObject.GetComponent<Animator>();
+        player_Capsule = gameObject.AddComponent<CapsuleCollider>();
+        player_Capsule.isTrigger = false;
+        player_Capsule.center = new Vector3(0, 1, 0);
+        player_Capsule.radius = .5f;
+        player_Capsule.height = 2f;
+        // Set direction to be y 0 = x, 1 = y, 2 = z
+        player_Capsule.direction = 1;
 
+        anim = GetComponent<Animator>();
+
+        if(anim == null)
+        {
+            Debug.LogWarning("There is no animator applies to this GameObject. There needs to be one attached through the IDE. Remeber to find the component in this script");
+        }
+
+        
+        
+        // the current stamina the player has during the game always starts with the max stamina value
+        // This is here just in case it gets changed through testing or by acciedent 
         currentStamina = maxStamina;
 
     }
@@ -99,108 +203,88 @@ public abstract class DB_Base_Class : MonoBehaviour
         // Call Functions
         Movement();
         Melee_Combat();
-
     }
-
-    #region Camera Functions
-    #region LateUpdate Function
-    protected virtual void LateUpdate()
-    {
-        if (targets.Count == 0)
-            return;
-
-        CameraMove();
-        Zoom();
-    }
-    #endregion
-
-    #region Camera Move
-    void CameraMove()
-    {
-        Vector3 centerPoint = GetCenterPoint();
-
-        Vector3 newPosition = centerPoint + offset;
-
-        transform.position = Vector3.SmoothDamp(transform.position, newPosition, ref velocity, smoothTime);
-    }
-    #endregion
-
-    #region Zoom Function
-    void Zoom()
-    {
-        float newZoom = Mathf.Lerp(maxZoom, minZoom, GetGreatestDistance() / zoomLimiter);
-        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, newZoom, Time.deltaTime);
-    }
-    #endregion
-
-    #region Greatest Distance Functions
-    float GetGreatestDistance()
-    {
-        var bounds = new Bounds(targets[0].position, Vector3.zero);
-        for (int i = 0; i < targets.Count; i++)
-        {
-            bounds.Encapsulate(targets[i].position);
-        }
-
-        return bounds.size.x;
-    }
-    #endregion
-
-    #region CenterPoint Function
-    protected virtual Vector3 GetCenterPoint()
-    {
-        if(targets.Count == 1)
-        {
-            return targets[0].position;
-        }
-
-        var bounds = new Bounds(targets[0].position, Vector3.zero);
-        for(int i = 0; i < targets.Count; i++)
-        {
-            bounds.Encapsulate(targets[i].position);
-        }
-        return bounds.center;
-    }
-    #endregion
-    #endregion
 
     #region Movement Function
     protected virtual void Movement()
     {
-        // if the knockBackCounter equals 0 or less than we can move
-        if (fl_knockBackCounter <= 0)
-        {
-            // Movement Logic
-            moveDirection = (transform.forward * Input.GetAxis("Vertical")) + (transform.right * Input.GetAxis("Horizontal"));
-            moveDirection = moveDirection.normalized * speed * Side_step;
-            moveDirection.y = moveDirection.y + Physics.gravity.y;  // Make sure CC isnt allowed to move current model up
-            PC_CC.Move(moveDirection * Time.deltaTime);     // Allows the player to move forward in the x and z axis
-        }
-        else
-        {
-            // Decrease the time if we arent at 0 or passed it on the knockBackCounter
-            fl_knockBackTime -= Time.deltaTime;
-        }
+        #region old Movement
+        // if the knockBackCounter equals 0 or less than we can move the object again
+        // This is used so the object is not constantly attacked when pushing the object back
+        //if (fl_knockBackCounter <= 0)
+        //{
+        //    // Movement Logic
+        //    // Movedirection carries the logic of what inout players need to press to move around the scene and in what direction can the object move
+        //    // This being left right forward and back. 
+        //    moveDirection = (transform.forward * Input.GetAxis("Vertical")) + (transform.right * Input.GetAxis("Horizontal"));
+        //    // Allow the vector to return as 1 so the speed floats are not a greater value. 
+        //    // i also found it made the movement system along side animations to run smooth
+        //    moveDirection = moveDirection.normalized * speed * Side_step;
+        //    // This restricts the model from rising on the +y axis. 
+        //    // I did this because i dont need any form of jumping or ascending on the Y axis
+        //    moveDirection.y = moveDirection.y + Physics.gravity.y;  // Make sure CC isnt allowed to move current model up
 
-        // Animations being detected
-        anim.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Vertical")));      // Value in script of speed is now the animation float value of speed
-        // Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
-        anim.SetFloat("Side Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
+        //    if (moveDirection.magnitude > 0.2f) // Apply the impact force
+        //        playerRB.Move(moveDirection * Time.deltaTime); // Allows the player to move forward in the x and z axis
 
-        // if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
-        if (Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            // The gameObjects animator in dervied classes finds boolean parameter and sets it true
-            anim.SetBool("SideStrife", true);
-        }
-        // However any of the A, D, Left Arrowor Right Arrow are no longer held down
-        else if(Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
-        {
-            // parameter animator boolean is not true and new animation plays depending on what you set next
-            anim.SetBool("SideStrife", false);
-        }
-        
-        
+        //    moveDirection = Vector3.Lerp(moveDirection, Vector3.zero, 5 * Time.deltaTime);
+        //}
+        //else
+        //{
+        //    // Decrease the time if we arent at 0 or passed it on the knockBackCounter
+        //    fl_knockBackTime -= Time.deltaTime;
+        //}
+
+        //// Animations being detected
+        //anim.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Vertical")));      // Value in script of speed is now the animation float value of speed
+        //// Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
+        //anim.SetFloat("Side Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
+
+        //// if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
+        //if (Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
+        //{
+        //    // The gameObjects animator in dervied classes finds boolean parameter and sets it true
+        //    anim.SetBool("SideStrife", true);
+        //}
+        //// However any of the A, D, Left Arrowor Right Arrow are no longer held down
+        //else if(Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
+        //{
+        //    // parameter animator boolean is not true and new animation plays depending on what you set next
+        //    anim.SetBool("SideStrife", false);
+        //}
+        #endregion
+
+
+        #region New Movement
+        // Take into consideration how the player will be moving around
+        float Horizontal = Input.GetAxis("Horizontal"); // Carries Z axis
+        float Vertical = Input.GetAxis("Vertical"); // Carries X axis
+
+        // Allows the moveDirection to access the inputs the player can press
+        moveDirection = (transform.forward * Vertical + (transform.right * Horizontal)) * Time.deltaTime * speed;
+
+        //moveDirection = (transform.forward * Input.GetAxis("Vertical")) + (transform.right * Input.GetAxis("Horizontal")) * Time.deltaTime;
+        moveDirection = moveDirection.normalized * speed;
+        moveDirection.y = moveDirection.y + Physics.gravity.y;
+
+        // Move the players physics compoenent Rigidbody with velocity using the Vector3 moveDirection and multiplying by speed
+        playerRB.velocity = moveDirection;
+
+        // Limiting the speed 
+        if (playerRB.velocity.x > maxSpeed)
+            playerRB.velocity = new Vector3(maxSpeed, playerRB.velocity.y, playerRB.velocity.z);
+
+        if (playerRB.velocity.x < -maxSpeed)
+            playerRB.velocity = new Vector3(-maxSpeed, playerRB.velocity.y, playerRB.velocity.z);
+
+        if (playerRB.velocity.z > maxSpeed)
+            playerRB.velocity = new Vector3(playerRB.velocity.x, playerRB.velocity.y, maxSpeed);
+
+        if (playerRB.velocity.z < -maxSpeed)
+            playerRB.velocity = new Vector3(playerRB.velocity.x, playerRB.velocity.y, -maxSpeed);
+
+        #endregion
+
     }
     #endregion
 
@@ -256,12 +340,29 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 
-    public void KnockBack(Vector3 direction)
+    protected virtual void KnockBack()
     {
+        #region Old code version 1.0
         // Knock Back Logic
         // For however long the knock back timer is we dont want to move
-        fl_knockBackCounter = fl_knockBackTime;
-        moveDirection = direction * fl_knockBackForce;
+        //fl_knockBackCounter = fl_knockBackTime;
+        //moveDirection = direction * fl_knockBackForce;
+        #endregion
+        #region old code version 1.1
+        //impactDirection = moveDirection;
+        //impactDirection.Normalize();
+        //if (impactDirection.z < 0)
+        //    impactDirection.z = impactDirection.z;      // Refect the force down
+        //moveDirection += impactDirection.normalized * force / mass;
+
+        //Debug.Log(moveDirection += impactDirection.normalized * force / mass);
+        #endregion
+
+        //impactDirection = PC_CC.velocity;
+        //moveDirection = impactDirection;
+        //impactDirection = new Vector3(transform.position.x, transform.position.y, PC_CC.velocity.z);
+
+       // impactDirection = new Vector3(transform.position.x, 0, transform.forward.z);
     }
 
     //// This function will be used to monitor how much energy is left in the fighter
@@ -271,7 +372,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     //// It leaves more strategic thinking on the players behalf
     //#endregion
     #region Stamina Monitor Function
-    protected virtual void StaminaBar()
+    protected virtual void StaminaForce()
     {
         // This will calculate how much power the player pushes the Enemy depending on the current stamina 
     }

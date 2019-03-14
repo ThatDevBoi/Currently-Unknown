@@ -319,19 +319,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7906593addf2784aa426471a2b35525, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PC_RightHand_SC: {fileID: 0}
-  PC_LeftHand_SC: {fileID: 0}
-  PC_CC: {fileID: 0}
-  speed: 0
-  Side_step: 3
-  moveDirection: {x: 0, y: 0, z: 0}
-  canMove: 0
-  anim: {fileID: 0}
-  bodyPunch: 0
-  fl_knockBackForce: 0
-  fl_knockBackTime: 0
-  currentStamina: 0
-  maxStamina: 200
   targets:
   - {fileID: 472016758}
   offset: {x: 5.5, y: 1.75, z: 2.19}
@@ -997,7 +984,7 @@ GameObject:
   - component: {fileID: 712417953}
   - component: {fileID: 712417954}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Fighter Test Cube
   m_TagString: NPC_Fighter
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1033,7 +1020,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 8dabff29b4518144b8347fc70acb1b3f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1086,7 +1073,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1.5, y: 1, z: 1.5}
+  m_Size: {x: 3, y: 1, z: 3}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &712417954
 MonoBehaviour:
@@ -1100,6 +1087,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e235623ffa88e3e48a639dbd54f42080, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PC_RightHand_SC: {fileID: 0}
+  PC_LeftHand_SC: {fileID: 0}
+  player_Capsule: {fileID: 0}
+  playerRB: {fileID: 0}
+  speed: 5
+  maxSpeed: 3
+  gravity: 15
+  RBmass: 2
+  moveDirection: {x: 0, y: 0, z: 0}
+  impactDirection: {x: 0, y: 0, z: 0}
+  canMove: 1
+  anim: {fileID: 0}
+  bodyPunch: 0
+  Hitmass: 5
+  pushForce: 30
+  fl_knockBackTime: 0
+  currentStamina: 0
+  maxStamina: 200
   damageToGive: 5
 --- !u!1 &969831367
 GameObject:
@@ -1861,6 +1866,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ybot@Idle
       objectReference: {fileID: 0}
+    - target: {fileID: 472016756, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 472016758, guid: 0896547b850787943b3862b49cb474a4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1908,6 +1917,54 @@ PrefabInstance:
     - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
       propertyPath: m_UpdateMode
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_CullingMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 21d0c018b185d3c4f9c1cdecdc17d97b, type: 2}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: impactDirection.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: force
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: mass
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: speed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: maxSpeed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: pushBackForce
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016759, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: pushForce
+      value: 30
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0896547b850787943b3862b49cb474a4, type: 3}

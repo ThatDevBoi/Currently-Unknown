@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DB_NPC_Fighter : MonoBehaviour
+public class DB_NPC_Fighter : DB_Base_Class
 {
-
+    // Value that subtracts from the players stamina 
     public int damageToGive = 5;
 
     // Start is called before the first frame update
@@ -19,16 +19,14 @@ public class DB_NPC_Fighter : MonoBehaviour
         
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "Player")
         {
-            Vector3 hitDirection = other.transform.position - transform.position;
-            hitDirection = hitDirection.normalized;
-            Debug.Log("Player is Here");
-            // To see where the player will land
-            Debug.Log(other.transform.position - transform.position);
-            other.gameObject.GetComponent<DB_PC_Controller>().StaminaHurt(damageToGive, hitDirection);
+            Vector3 pushDirection = other.transform.position - transform.position;
+            pushDirection = -pushDirection.normalized;
+            GetComponent<Rigidbody>().AddForce(pushDirection * pushForce * 100);
+            Debug.Log("Im Being Called");
         }
     }
 }

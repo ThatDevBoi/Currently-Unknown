@@ -6,8 +6,6 @@ public class DB_PC_Controller : DB_Base_Class
 {
     public Transform NPC_target;
 
-    public int damageToGive = 20;
-
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -20,9 +18,19 @@ public class DB_PC_Controller : DB_Base_Class
         base.Update();
     }
 
-    public void StaminaHurt(int staminaDamage, Vector3 direction)
+    public void StaminaHurt(int hurt, Vector3 direction)
     {
-        currentStamina -= staminaDamage;
-        KnockBack(direction);
+        currentStamina -= hurt;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "NPC_Fighter")
+        {
+            Vector3 pushDirection = other.transform.position - transform.position;
+            pushDirection = -pushDirection.normalized;
+            GetComponent<Rigidbody>().AddForce(pushDirection * pushForce * 100);
+            Debug.Log("Im Being Called");
+        }
     }
 }
