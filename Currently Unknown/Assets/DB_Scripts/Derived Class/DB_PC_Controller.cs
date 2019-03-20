@@ -12,11 +12,7 @@ public class DB_PC_Controller : DB_Base_Class
         base.Start();
     }
 
-    // Update is called once per frame
-    protected override void Update()
-    {
-        base.Update();
-    }
+
 
     public void StaminaHurt(int hurt, Vector3 direction)
     {

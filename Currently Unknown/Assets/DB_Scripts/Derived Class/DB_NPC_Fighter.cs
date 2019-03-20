@@ -8,9 +8,9 @@ public class DB_NPC_Fighter : DB_Base_Class
     public int damageToGive = 5;
 
     // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
-        
+        base.Start();
     }
 
     // Update is called once per frame

@@ -19,6 +19,7 @@ using UnityEngine;
 // Using A Character Controller would make moving more smooth
 // First Person Camera
 // No Rotation Just Moving at an Angle
+// Fighters move toe to toe    // https://www.youtube.com/watch?v=tcJBMqU_KzA <-- Example of toe to toe 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Animator))]
@@ -59,6 +60,10 @@ public abstract class DB_Base_Class : MonoBehaviour
     protected float Hitmass = 5;    // Used to devide the force depending on the players stamina
     //[SerializeField]
     //protected float force = 3;  // Remove
+    // This is a value that puses the players and NPCs back when punches. 
+    // However the stamina value will effect the vlaue of force that players and NPCs can apply so it adds
+    // Strategic gameplay that allows players to back away
+    // Also there will be a system where players can upgarde their stamina
     [SerializeField]
     protected float pushForce = 30;
     [SerializeField]
@@ -68,6 +73,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     public int currentStamina;
     public int maxStamina = 200;
 
+    #region Camera Movement Class
     [SerializeField]
     public class Camera_Movement : MonoBehaviour
     {
@@ -147,7 +153,29 @@ public abstract class DB_Base_Class : MonoBehaviour
         #endregion
         #endregion
     }
+    #endregion
 
+    #region Upgrade Character Class
+    [SerializeField]
+    public class Upgarde_PC_stamina : MonoBehaviour
+    {
+        #region Upgrade Variable
+
+        #endregion
+
+        #region Shop System
+
+        #endregion
+
+        #region Upgarde Stamina Vlaue
+
+        #endregion
+
+        #region Upgarde Health Value
+
+        #endregion
+    }
+    #endregion
     // Start is called before the first frame update
     protected virtual void Start()
     {
@@ -198,7 +226,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
 
     // Update is called once per frame
-    protected virtual void Update()
+    protected virtual void FixedUpdate()
     {
         // Call Functions
         Movement();
@@ -235,23 +263,23 @@ public abstract class DB_Base_Class : MonoBehaviour
         //    fl_knockBackTime -= Time.deltaTime;
         //}
 
-        //// Animations being detected
-        //anim.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Vertical")));      // Value in script of speed is now the animation float value of speed
-        //// Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
-        //anim.SetFloat("Side Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
+        ////// Animations being detected
+        ////anim.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Vertical")));      // Value in script of speed is now the animation float value of speed
+        ////// Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
+        ////anim.SetFloat("Side Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
 
-        //// if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
-        //if (Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
-        //{
-        //    // The gameObjects animator in dervied classes finds boolean parameter and sets it true
-        //    anim.SetBool("SideStrife", true);
-        //}
-        //// However any of the A, D, Left Arrowor Right Arrow are no longer held down
-        //else if(Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
-        //{
-        //    // parameter animator boolean is not true and new animation plays depending on what you set next
-        //    anim.SetBool("SideStrife", false);
-        //}
+        ////// if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
+        ////if (Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
+        ////{
+        ////    // The gameObjects animator in dervied classes finds boolean parameter and sets it true
+        ////    anim.SetBool("SideStrife", true);
+        ////}
+        ////// However any of the A, D, Left Arrowor Right Arrow are no longer held down
+        ////else if(Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
+        ////{
+        ////    // parameter animator boolean is not true and new animation plays depending on what you set next
+        ////    anim.SetBool("SideStrife", false);
+        ////}
         #endregion
 
 
@@ -259,6 +287,18 @@ public abstract class DB_Base_Class : MonoBehaviour
         // Take into consideration how the player will be moving around
         float Horizontal = Input.GetAxis("Horizontal"); // Carries Z axis
         float Vertical = Input.GetAxis("Vertical"); // Carries X axis
+
+
+        // Remove Later
+        if(Input.GetKeyDown(KeyCode.E))
+        {
+            anim.applyRootMotion = true;
+        }
+
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            anim.applyRootMotion = false;
+        }
 
         // Allows the moveDirection to access the inputs the player can press
         moveDirection = (transform.forward * Vertical + (transform.right * Horizontal)) * Time.deltaTime * speed;
@@ -283,6 +323,24 @@ public abstract class DB_Base_Class : MonoBehaviour
         if (playerRB.velocity.z < -maxSpeed)
             playerRB.velocity = new Vector3(playerRB.velocity.x, playerRB.velocity.y, -maxSpeed);
 
+        // Animations being detected
+        anim.SetFloat("Speed", Vertical * speed);      // Value in script of speed is now the animation float value of speed
+        // Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
+        anim.SetFloat("Side Speed", Horizontal * speed);
+
+        // if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
+        if (Input.GetButton("Strafe") | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            // The gameObjects animator in dervied classes finds boolean parameter and sets it true
+            anim.SetBool("SideStrife", true);
+        }
+        // However any of the A, D, Left Arrowor Right Arrow are no longer held down
+        else if (Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
+        {
+            // parameter animator boolean is not true and new animation plays depending on what you set next
+            anim.SetBool("SideStrife", false);
+        }
+
         #endregion
 
     }
@@ -299,6 +357,18 @@ public abstract class DB_Base_Class : MonoBehaviour
     {
         // List of different attacks via animations
         // Change this button later
+        //if (Input.GetButtonDown("Jump"))
+        //{
+        //    anim.applyRootMotion = true;
+        //}
+        //else
+        //{
+        //    if(Input.GetButtonUp("Jump"))
+        //    {
+        //        anim.applyRootMotion = false;
+        //    }
+        //}
+
         if (Input.GetButtonDown("Jump"))
         {
             currentStamina -= 5;
@@ -306,13 +376,14 @@ public abstract class DB_Base_Class : MonoBehaviour
         }
         else
         {
-            if(Input.GetButtonUp("Jump"))
+            if (Input.GetButtonUp("Jump"))
             {
                 anim.SetBool("Jabbing", false);
             }
         }
+
         // Change this button later
-        if(Input.GetButtonDown("Fire1"))
+        if (Input.GetButtonDown("Fire1"))
         {
             currentStamina -= 10;
             anim.SetBool("Body Punch", true);
