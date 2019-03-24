@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+// Basic flat diagram logic
 // Things to consider firstly
 // Inspired from Urban Champion 
 // What will Player Characters AN AI share in common?
@@ -20,11 +20,14 @@ using UnityEngine;
 // First Person Camera
 // No Rotation Just Moving at an Angle
 // Fighters move toe to toe    // https://www.youtube.com/watch?v=tcJBMqU_KzA <-- Example of toe to toe 
+// Helped with referee movement choice //https://answers.unity.com/questions/1179375/placing-an-object-between-2-objects.html
+
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Animator))]
 public abstract class DB_Base_Class : MonoBehaviour
 {
+    #region Player and NPC variables
     [SerializeField]
     protected SphereCollider PC_RightHand_SC;
     [SerializeField]
@@ -41,7 +44,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     protected float gravity = 15;
     [SerializeField]
     protected float RBmass = 2;
-
     //[SerializeField]
     //protected float Side_step = 3;
     [SerializeField]
@@ -54,7 +56,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     private Animator anim;
     [SerializeField]
     protected bool bodyPunch = false;
-
     // Melee combat Variables
     [SerializeField]
     protected float Hitmass = 5;    // Used to devide the force depending on the players stamina
@@ -69,35 +70,40 @@ public abstract class DB_Base_Class : MonoBehaviour
     [SerializeField]
     protected float fl_knockBackTime;   // Used so players can get spammed with punches
     protected float fl_knockBackCounter;    // 
-
+    // The current amount of stamina the player or NPC has.
+    // We use this to place the correct amount of stamina value each time the game is played
     public int currentStamina;
+    // This value will be passed onto the currentStamina value
     public int maxStamina = 200;
+    #endregion
+
 
     #region Camera Movement Class
     [SerializeField]
     public class Camera_Movement : MonoBehaviour
     {
         #region Camera Variables 
-        public List<Transform> targets;
-        public Vector3 offset;
-        public float smoothTime = .5f;
+        public List<Transform> targets; // List of transforms that the Camera can reference from
+        public Vector3 offset;  // Vector3 used to let the camera know where its going to be angled
+        public float smoothTime = .5f;  // a float value that lets the position of the camera move slowly acorss to whatever direction it needs to go to
 
-        public float minZoom = 40f;
-        public float maxZoom = 10f;
-        public float zoomLimiter = 50f;
+        public float minZoom = 40f;  // the start zoom the camera references from when Objects are far apart
+        public float maxZoom = 10f; // Max value the camera can zoom into the Transforms being reference
+        public float zoomLimiter = 50f; // The cap limit for the zoom 
 
-        protected Camera cam;
+        protected Camera cam;   // The camera we are using 
 
-        private Vector3 velocity;
+        private Vector3 velocity;   
         #endregion
 
         #region Camera Functions
         #region LateUpdate Function
         protected virtual void LateUpdate()
         {
+            // when the targets havent been applied
             if (targets.Count == 0)
-                return;
-
+                return; // return so the rest of the code isnt runed
+            // Functions that need to be called
             CameraMove();
             Zoom();
         }
@@ -106,10 +112,11 @@ public abstract class DB_Base_Class : MonoBehaviour
         #region Camera Move
         void CameraMove()
         {
+            // the center point Vector is the point where the camera needs to be so it can see all references Transforms
             Vector3 centerPoint = GetCenterPoint();
-
-            Vector3 newPosition = centerPoint + offset;
-
+            // the newPosition vector allowing the camera to know where it needs to be next depending on any movement on any reference Transform
+            Vector3 newPosition = centerPoint + offset; // We set offset in the IDE so the camera moves to the offset position
+            // The position of the camera is monitoring its current position and also the Vector of where it could be next
             transform.position = Vector3.SmoothDamp(transform.position, newPosition, ref velocity, smoothTime);
         }
         #endregion
@@ -117,7 +124,10 @@ public abstract class DB_Base_Class : MonoBehaviour
         #region Zoom Function
         void Zoom()
         {
+            // newZoom goes between the 2 zoom fgloat values and using the GreatestDistance float and deviding it by the cap so we know that the camera wont 
+            // go past its limit and takes into consideration of the min and max so it knows when to stop zoming and where to start
             float newZoom = Mathf.Lerp(maxZoom, minZoom, GetGreatestDistance() / zoomLimiter);
+            // We are setting the camera field of view to the newZoom
             cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, newZoom, Time.deltaTime);
         }
         #endregion
@@ -125,9 +135,12 @@ public abstract class DB_Base_Class : MonoBehaviour
         #region Greatest Distance Functions
         float GetGreatestDistance()
         {
+            // We are finding the centre from all the references Transforms
             var bounds = new Bounds(targets[0].position, Vector3.zero);
+            // for every target Transform in the List
             for (int i = 0; i < targets.Count; i++)
             {
+                // we take that into consideration and have a new Reference to monitor and considering its position
                 bounds.Encapsulate(targets[i].position);
             }
 
@@ -138,16 +151,21 @@ public abstract class DB_Base_Class : MonoBehaviour
         #region CenterPoint Function
         protected virtual Vector3 GetCenterPoint()
         {
+            // if there is only 1 reference 
             if (targets.Count == 1)
             {
+                // we only follow the position of target 0 as lists start from 0 and up
                 return targets[0].position;
             }
-
+            // Makes it so that the targets position is the centre
             var bounds = new Bounds(targets[0].position, Vector3.zero);
+            // We monitor how many Reference Transforms are in the list
             for (int i = 0; i < targets.Count; i++)
             {
+                // Calculate the list Transforms and their positions in the world
                 bounds.Encapsulate(targets[i].position);
             }
+            // So we can find the centre point of all these Transforms and feed it back
             return bounds.center;
         }
         #endregion
@@ -155,6 +173,43 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 
+    #region AI Referee Class
+    [SerializeField]
+    public class Referee : MonoBehaviour
+    {
+        #region Referee Variables 
+        [SerializeField]
+        protected Vector3 vec_playerFighter;    // Player fighter GameObject Vector3 which will be monitored via its position in the world
+        [SerializeField]
+        protected Vector3 vec_NPCFighter;   // NPC fighter GameObject Vector3 reference that will be monitored via its position in the world
+        [SerializeField]
+        protected Vector3 centerPoint;  // This Vector3 Reference tells the referee GameObject in the scene where to be depending on the PC and NPC position
+        // Booleans offenderMissed and offenderCaught can change state of game
+        // if offenderCaught eventually = true then the referee GameObject steps between the fighters. 
+        private bool offenderMissed = true;     // referee didnt see PC or NPC elbowing
+        private bool offenderCaught = false;    // Referee did see the PC/NPC elbowing
+        #endregion
+
+        #region Referee Logic void
+        protected virtual void RefereeAI()
+        {
+            // Side note for next time
+            // make boolean for when offender is caught make the referee go between both fighters. This way no one can attack and both fighters go back to their corners
+
+
+            // Find the 2 Objects that the ref needs to stay between
+            centerPoint = (vec_playerFighter + vec_NPCFighter) * 0.5f;
+            //transform.position = new Vector3(-3, transform.position.y, transform.position.z);
+            transform.position = centerPoint;
+            // 0.568 on the y is the value needed to be set so the referee doesnt go through the ground
+            // This was tested with a cube so it might change later This depends on if i change scale of object. position of Z value or using a 3D model
+            transform.position = new Vector3(-3, 0.568f, transform.position.z);
+        }
+        #endregion
+    }
+    #endregion
+
+    // Add this if time is relevant
     #region Upgrade Character Class
     [SerializeField]
     public class Upgarde_PC_stamina : MonoBehaviour
@@ -176,10 +231,12 @@ public abstract class DB_Base_Class : MonoBehaviour
         #endregion
     }
     #endregion
+
     // Start is called before the first frame update
     protected virtual void Start()
     {
-        // Add IDE Components
+        // These 2 regions are for placing a sphere collider on the Player or NPC hand. Which will allow for trigger/collision enters
+        // We need both hands with colliders as one attack is a jab with one hand and another attack is with the opposite hand
         #region Right Hand Size
         PC_RightHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
         PC_RightHand_SC.center = new Vector3(0.09f, 0, 0.01f);    // resize SphereCollider
@@ -190,6 +247,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         PC_LeftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Resize SphereCollider
         PC_LeftHand_SC.radius = 0.07f;
         #endregion
+        // This is the set up for the Rigidbody (our physics) which we apply and edit to our needs
         #region Rigidbody Setup
         playerRB = gameObject.AddComponent<Rigidbody>();     // Adds Rigidbody compoenent into the IDE we need it to apply physics 
         playerRB.useGravity = true;
@@ -201,7 +259,10 @@ public abstract class DB_Base_Class : MonoBehaviour
         playerRB.drag = 0;
         playerRB.angularDrag = 0.05f;
         #endregion
-
+        // This is the set up for the PC/NPC capsule collider
+        #region Capsule Collider Setup
+        // Set up the capsule collider which can be used for player and NPC
+        // Because the 2 fighters will be the same model just different colours
         player_Capsule = gameObject.AddComponent<CapsuleCollider>();
         player_Capsule.isTrigger = false;
         player_Capsule.center = new Vector3(0, 1, 0);
@@ -209,20 +270,41 @@ public abstract class DB_Base_Class : MonoBehaviour
         player_Capsule.height = 2f;
         // Set direction to be y 0 = x, 1 = y, 2 = z
         player_Capsule.direction = 1;
-
+        #endregion
+        // This region is for any components we dont apply through script
+        // however want to find and store there reference
+        #region Finding any IDE components
         anim = GetComponent<Animator>();
-
-        if(anim == null)
-        {
-            Debug.LogWarning("There is no animator applies to this GameObject. There needs to be one attached through the IDE. Remeber to find the component in this script");
-        }
-
-        
-        
+        #endregion
+        #region Sets values 
         // the current stamina the player has during the game always starts with the max stamina value
         // This is here just in case it gets changed through testing or by acciedent 
         currentStamina = maxStamina;
-
+        #endregion
+        #region MUST READ FOR DEBUGGING
+        // All these debugging calls need to be left at the bottom. if not this could causes issues. 
+        // Say we are checking if an animator component has been found or a value is the correct number
+        // if we dont find these IDE components or set these values before the debug code is run
+        // Then the debugs declare they havent been found when they are being declared before the Start function can even find or set them
+        // this leaves us with the idea that there is an issue when there isnt. the code is just in the wrong order
+        #endregion
+        // This is used to set if statements to find any bugs that could occure
+        // during later development
+        // Like not finding a reference or making sure a value is set to thr right amount
+        #region Debugging errors
+        // if the animator reference in this script or passed onto any derived class is not found
+        if (anim == null)
+        {
+            // Write a message in the console to notify any developer what the issue is
+            Debug.LogWarning("There is no animator applies to this GameObject. There needs to be one attached through the IDE. Remeber to find the component in this script");
+        }
+        // if our current stamina value is less than 200 on start
+        if(currentStamina < 200f || currentStamina > 200f)
+        {
+            // write this message in the console. that the start stamina is not correct. However maybe they want to change the value when testing
+            Debug.LogWarning("The current stamina value you've started with is not right. it needs to be 200. However if you need to change the start stamina value, then change the if logic so it meets your needs");
+        }
+        #endregion
     }
 
     // Update is called once per frame
@@ -282,23 +364,10 @@ public abstract class DB_Base_Class : MonoBehaviour
         ////}
         #endregion
 
-
         #region New Movement
         // Take into consideration how the player will be moving around
         float Horizontal = Input.GetAxis("Horizontal"); // Carries Z axis
         float Vertical = Input.GetAxis("Vertical"); // Carries X axis
-
-
-        // Remove Later
-        if(Input.GetKeyDown(KeyCode.E))
-        {
-            anim.applyRootMotion = true;
-        }
-
-        if(Input.GetKeyDown(KeyCode.P))
-        {
-            anim.applyRootMotion = false;
-        }
 
         // Allows the moveDirection to access the inputs the player can press
         moveDirection = (transform.forward * Vertical + (transform.right * Horizontal)) * Time.deltaTime * speed;
@@ -340,13 +409,11 @@ public abstract class DB_Base_Class : MonoBehaviour
             // parameter animator boolean is not true and new animation plays depending on what you set next
             anim.SetBool("SideStrife", false);
         }
-
         #endregion
-
     }
     #endregion
 
-    #region Notes
+    #region What is this function for
     // This function is used for when NPC and PC are in combat
     // Players can input a key (Space Bar) and deliver a jab (This will be showed different in the NPC_Fighter Dervied Class)
     // However players can use the base class version in the Player Controller
@@ -355,20 +422,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     #region Melee Combat Function
     protected virtual void Melee_Combat()
     {
-        // List of different attacks via animations
-        // Change this button later
-        //if (Input.GetButtonDown("Jump"))
-        //{
-        //    anim.applyRootMotion = true;
-        //}
-        //else
-        //{
-        //    if(Input.GetButtonUp("Jump"))
-        //    {
-        //        anim.applyRootMotion = false;
-        //    }
-        //}
-
         if (Input.GetButtonDown("Jump"))
         {
             currentStamina -= 5;
@@ -395,12 +448,10 @@ public abstract class DB_Base_Class : MonoBehaviour
                 anim.SetBool("Body Punch", false);
             }
         }
-
-
     }
     #endregion
 
-    #region notes
+    #region What is this Function for
     // This function allows NPC or Player to pick up an object to use in a fight
     // However might be taken away and instead use power up pickups
     #endregion
@@ -411,6 +462,20 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 
+    #region What Is This Function
+    // This function is used in the derived class for the AI referee
+    // In this class we will make sure the referee GameObject stays between 2 fighters.
+    // We will also be monitoring if any NPC or PC fighters do an illegal attack
+    // We check this so the referee can generate a number and decide if the Player/NPC gets punished for their actions
+    // We also want a state where a random fan can throw an object at the Referee to stun and stop the Object. 
+    // We are going to do this so there is a point in Gameplay where NPC and PC can just attack however they please. 
+
+    // Side note if the referee decides to notice an illegal attack both fighters go back to their corners
+    // the offender will also get a strike 3 strikes and you lose (DQ)
+    // this effect also allows for a different style of Gameplay. 
+    // Players might want to be an caught by the ref although it adds risk for them to be DQ both sides will generate stamina back
+    // players could be fighting a hard opponent get to a point and then lose all stamina 
+    #endregion
     protected virtual void KnockBack()
     {
         #region Old code version 1.0
