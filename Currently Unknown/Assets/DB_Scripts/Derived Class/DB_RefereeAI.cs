@@ -17,6 +17,8 @@ public class DB_RefereeAI : DB_Base_Class.Referee
         vec_playerFighter = GameObject.FindGameObjectWithTag("Player").transform.position;
         // Find the NPC fighter so the Vector3 can hold its position in the world
         vec_NPCFighter = GameObject.FindGameObjectWithTag("NPC_Fighter").transform.position;
+
+        transform.position = new Vector3(vec_NPCFighter.x, transform.position.y, transform.position.z);
         // Call referee logic from base
         RefereeAI();
     }

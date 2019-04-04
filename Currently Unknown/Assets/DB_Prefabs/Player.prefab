@@ -261,7 +261,7 @@ GameObject:
   - component: {fileID: 472016757}
   - component: {fileID: 472016759}
   m_Layer: 0
-  m_Name: ybot@Idle
+  m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -297,7 +297,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 21d0c018b185d3c4f9c1cdecdc17d97b, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
@@ -315,27 +315,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eb0be86cba6b2043a42cc0b1ec3732a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PC_RightHand_SC: {fileID: 0}
-  PC_LeftHand_SC: {fileID: 0}
-  PC_CC: {fileID: 0}
-  speed: 1
-  Side_step: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  canMove: 0
+  rightHand_SC: {fileID: 0}
+  leftHand_SC: {fileID: 0}
+  body_CapsuleCollider: {fileID: 0}
+  head_Collider: {fileID: 0}
+  body_Collider: {fileID: 0}
+  playerRB: {fileID: 0}
+  gravity: 15
+  rbMass: 2
   anim: {fileID: 0}
-  bodyPunch: 0
-  fl_knockBackForce: 10
+  speed: 7
+  maxSpeed: 8
+  moveDirection: {x: 0, y: 0, z: 0}
+  pushForce: 30
   fl_knockBackTime: 0.5
   currentStamina: 0
   maxStamina: 200
-  targets: []
-  offset: {x: 0, y: 0, z: 0}
-  smoothTime: 0.5
-  minZoom: 40
-  maxZoom: 10
-  zoomLimiter: 50
   NPC_target: {fileID: 0}
-  damageToGive: 5
 --- !u!1 &481651157
 GameObject:
   m_ObjectHideFlags: 0
@@ -746,7 +742,7 @@ GameObject:
   - component: {fileID: 749650605}
   m_Layer: 0
   m_Name: mixamorig:RightHand
-  m_TagString: Untagged
+  m_TagString: PC_RHand
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1861,7 +1857,7 @@ GameObject:
   - component: {fileID: 1691418263}
   m_Layer: 0
   m_Name: mixamorig:LeftHand
-  m_TagString: Untagged
+  m_TagString: PC_Hand
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

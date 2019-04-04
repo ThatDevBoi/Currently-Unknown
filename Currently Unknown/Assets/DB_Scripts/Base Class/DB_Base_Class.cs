@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿#region Unity Engine Using
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+#endregion
+#region Research and information about class
 // Basic flat diagram logic
 // Things to consider firstly
 // Inspired from Urban Champion 
@@ -21,47 +23,53 @@ using UnityEngine;
 // No Rotation Just Moving at an Angle
 // Fighters move toe to toe    // https://www.youtube.com/watch?v=tcJBMqU_KzA <-- Example of toe to toe 
 // Helped with referee movement choice //https://answers.unity.com/questions/1179375/placing-an-object-between-2-objects.html
-
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(CapsuleCollider))]
-[RequireComponent(typeof(Animator))]
+#endregion
+#region Base Class
+//[RequireComponent(typeof(Rigidbody))]
+//[RequireComponent(typeof(CapsuleCollider))]
+//[RequireComponent(typeof(Animator))]
 public abstract class DB_Base_Class : MonoBehaviour
 {
     #region Player and NPC variables
+    #region Physics
     [SerializeField]
-    protected SphereCollider PC_RightHand_SC;
+    protected SphereCollider rightHand_SC;
     [SerializeField]
-    protected SphereCollider PC_LeftHand_SC;
+    protected SphereCollider leftHand_SC;
     [SerializeField]
-    protected CapsuleCollider player_Capsule;
+    protected CapsuleCollider body_CapsuleCollider;
+    [SerializeField]
+    protected SphereCollider head_Collider;
+    [SerializeField]
+    protected BoxCollider body_Collider;
     [SerializeField]
     protected Rigidbody playerRB;
+    [SerializeField]
+    protected float gravity = 15;
+    [SerializeField]
+    protected float rbMass = 2;
+    #endregion
+
+    #region Movement
+    [SerializeField]    // Remove
+    protected Animator anim;
     [SerializeField]
     protected float speed = 5;
     [SerializeField]
     protected float maxSpeed = 3;
-    [SerializeField]
-    protected float gravity = 15;
-    [SerializeField]
-    protected float RBmass = 2;
-    //[SerializeField]
-    //protected float Side_step = 3;
+    // Floats that carry a movement direction so it can be passed through to derived classes
+    // This is needed mainly for the animations which will be done in ther derived classes
+    protected float Vertical;
+    protected float Horizontal;
     [SerializeField]
     protected Vector3 moveDirection = Vector3.zero;
-    [SerializeField]
-    protected Vector3 impactDirection = Vector3.zero;
-    [SerializeField]    // Remove
-    protected bool canMove = true;
-    [SerializeField]    // Remove
-    private Animator anim;
-    [SerializeField]
-    protected bool bodyPunch = false;
-    // Melee combat Variables
-    [SerializeField]
-    protected float Hitmass = 5;    // Used to devide the force depending on the players stamina
+    #endregion
+
+    #region Fighting 
     //[SerializeField]
-    //protected float force = 3;  // Remove
-    // This is a value that puses the players and NPCs back when punches. 
+    //protected float Hitmass = 5;    // Used to devide the force depending on the players stamina
+
+    // This is a value that pushes the players and NPCs back when punches. 
     // However the stamina value will effect the vlaue of force that players and NPCs can apply so it adds
     // Strategic gameplay that allows players to back away
     // Also there will be a system where players can upgarde their stamina
@@ -75,6 +83,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     public int currentStamina;
     // This value will be passed onto the currentStamina value
     public int maxStamina = 200;
+    #endregion
     #endregion
 
 
@@ -184,6 +193,8 @@ public abstract class DB_Base_Class : MonoBehaviour
         protected Vector3 vec_NPCFighter;   // NPC fighter GameObject Vector3 reference that will be monitored via its position in the world
         [SerializeField]
         protected Vector3 centerPoint;  // This Vector3 Reference tells the referee GameObject in the scene where to be depending on the PC and NPC position
+        // There needs to be a Vector which allows the Referee to move between the 2 fighters when an offender does a illegal move
+
         // Booleans offenderMissed and offenderCaught can change state of game
         // if offenderCaught eventually = true then the referee GameObject steps between the fighters. 
         private bool offenderMissed = true;     // referee didnt see PC or NPC elbowing
@@ -208,6 +219,14 @@ public abstract class DB_Base_Class : MonoBehaviour
         #endregion
     }
     #endregion
+
+    public class AI_Crowed : MonoBehaviour
+    {
+        // When a Fighter does an illegal move
+        // Decide a random object PC, Ref or NPC, Ref and throw an object at them
+        // If the object hits stun the fighter or ref
+        // Use add force to throw an object at them from where the camera is facing
+    }
 
     // Add this if time is relevant
     #region Upgrade Character Class
@@ -238,14 +257,26 @@ public abstract class DB_Base_Class : MonoBehaviour
         // These 2 regions are for placing a sphere collider on the Player or NPC hand. Which will allow for trigger/collision enters
         // We need both hands with colliders as one attack is a jab with one hand and another attack is with the opposite hand
         #region Right Hand Size
-        PC_RightHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
-        PC_RightHand_SC.center = new Vector3(0.09f, 0, 0.01f);    // resize SphereCollider
-        PC_RightHand_SC.radius = 0.06f; // Set Sphere collider Radius
+        rightHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
+        rightHand_SC.isTrigger = true;
+        rightHand_SC.center = new Vector3(0.09f, 0, 0.01f);    // resize SphereCollider
+        rightHand_SC.radius = 0.06f; // Set Sphere collider Radius
         #endregion
         #region Left Hand Size
-        PC_LeftHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
-        PC_LeftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Resize SphereCollider
-        PC_LeftHand_SC.radius = 0.07f;
+        leftHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
+        leftHand_SC.isTrigger = true;
+        leftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Resize SphereCollider
+        leftHand_SC.radius = 0.07f;
+        #endregion
+        #region Head Sphere Collider SetUp
+        head_Collider = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head").gameObject.AddComponent<SphereCollider>();
+        head_Collider.center = new Vector3(0, 0.06f, 0.05f);
+        head_Collider.radius = 0.16f;
+        #endregion
+        #region Body Box Collider SetUp
+        body_Collider = gameObject.transform.FindChild("mixamorig:Hips").gameObject.AddComponent<BoxCollider>();
+        body_Collider.center = new Vector3(0, 0, 0);
+        body_Collider.size = new Vector3(0.48f, 0.28f, 0.37f);
         #endregion
         // This is the set up for the Rigidbody (our physics) which we apply and edit to our needs
         #region Rigidbody Setup
@@ -263,18 +294,21 @@ public abstract class DB_Base_Class : MonoBehaviour
         #region Capsule Collider Setup
         // Set up the capsule collider which can be used for player and NPC
         // Because the 2 fighters will be the same model just different colours
-        player_Capsule = gameObject.AddComponent<CapsuleCollider>();
-        player_Capsule.isTrigger = false;
-        player_Capsule.center = new Vector3(0, 1, 0);
-        player_Capsule.radius = .5f;
-        player_Capsule.height = 2f;
+        body_CapsuleCollider = gameObject.AddComponent<CapsuleCollider>();
+        body_CapsuleCollider.isTrigger = false;
+        body_CapsuleCollider.center = new Vector3(0, 1, 0);
+        // This collider needs to be this small for there are other colliders that are more important. Like the head collider that the NPC or player needs to punch. 
+        // Or the body collider that the player can punch
+        body_CapsuleCollider.radius = 0.03f;
+        body_CapsuleCollider.height = 2f;
         // Set direction to be y 0 = x, 1 = y, 2 = z
-        player_Capsule.direction = 1;
+        body_CapsuleCollider.direction = 1;
         #endregion
         // This region is for any components we dont apply through script
         // however want to find and store there reference
         #region Finding any IDE components
         anim = GetComponent<Animator>();
+        anim.applyRootMotion = false;
         #endregion
         #region Sets values 
         // the current stamina the player has during the game always starts with the max stamina value
@@ -307,13 +341,16 @@ public abstract class DB_Base_Class : MonoBehaviour
         #endregion
     }
 
-    // Update is called once per frame
-    protected virtual void FixedUpdate()
-    {
-        // Call Functions
-        Movement();
-        Melee_Combat();
-    }
+    #region Removed FixedUpdate
+    // Removed for it was clashing with the NPC
+    //// Update is called once per frame
+    //protected virtual void FixedUpdate()
+    //{
+    //    // Call Functions
+    //    Movement();
+    //    Melee_Combat();
+    //}
+    #endregion
 
     #region Movement Function
     protected virtual void Movement()
@@ -366,8 +403,8 @@ public abstract class DB_Base_Class : MonoBehaviour
 
         #region New Movement
         // Take into consideration how the player will be moving around
-        float Horizontal = Input.GetAxis("Horizontal"); // Carries Z axis
-        float Vertical = Input.GetAxis("Vertical"); // Carries X axis
+        Horizontal = Input.GetAxis("Horizontal"); // Carries Z axis
+        Vertical = Input.GetAxis("Vertical"); // Carries X axis
 
         // Allows the moveDirection to access the inputs the player can press
         moveDirection = (transform.forward * Vertical + (transform.right * Horizontal)) * Time.deltaTime * speed;
@@ -391,24 +428,7 @@ public abstract class DB_Base_Class : MonoBehaviour
 
         if (playerRB.velocity.z < -maxSpeed)
             playerRB.velocity = new Vector3(playerRB.velocity.x, playerRB.velocity.y, -maxSpeed);
-
-        // Animations being detected
-        anim.SetFloat("Speed", Vertical * speed);      // Value in script of speed is now the animation float value of speed
-        // Allow for animator parameter to use side step so blend tree knows when to change animation left = -1 | idle = 0 | right = 1
-        anim.SetFloat("Side Speed", Horizontal * speed);
-
-        // if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
-        if (Input.GetButton("Strafe") | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            // The gameObjects animator in dervied classes finds boolean parameter and sets it true
-            anim.SetBool("SideStrife", true);
-        }
-        // However any of the A, D, Left Arrowor Right Arrow are no longer held down
-        else if (Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
-        {
-            // parameter animator boolean is not true and new animation plays depending on what you set next
-            anim.SetBool("SideStrife", false);
-        }
+        // Removed animation from movement function as it was a messy way to have the movement Function
         #endregion
     }
     #endregion
@@ -514,3 +534,4 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 }
+#endregion
