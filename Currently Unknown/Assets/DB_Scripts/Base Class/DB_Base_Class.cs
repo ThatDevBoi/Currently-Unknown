@@ -80,9 +80,20 @@ public abstract class DB_Base_Class : MonoBehaviour
     protected float fl_knockBackCounter;    // 
     // The current amount of stamina the player or NPC has.
     // We use this to place the correct amount of stamina value each time the game is played
-    public int currentStamina;
+    [SerializeField]
+    protected int currentStamina;
+    [SerializeField]
+    protected int coreHealth;
     // This value will be passed onto the currentStamina value
-    public int maxStamina = 200;
+    protected int maxStamina = 200;
+    [SerializeField]
+    protected int maxCore_Health = 500;
+    [SerializeField]
+    protected int damage_Stamina = 5;
+    [SerializeField]
+    protected int increase_Stamina = 5;
+    [SerializeField]
+    protected float increase_Stamina_timer = 5f;
     #endregion
     #endregion
 
@@ -251,6 +262,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 
+    #region Start Function
     // Start is called before the first frame update
     protected virtual void Start()
     {
@@ -314,6 +326,9 @@ public abstract class DB_Base_Class : MonoBehaviour
         // the current stamina the player has during the game always starts with the max stamina value
         // This is here just in case it gets changed through testing or by acciedent 
         currentStamina = maxStamina;
+        // The current core health (Core health being the main health like blood) is used to actually make the fight stop. 
+        // the fighter can only be hurt badly if the stamina value is less than 0 showinfg the fighter has no energy so no way to defend themselves
+        coreHealth = maxCore_Health;
         #endregion
         #region MUST READ FOR DEBUGGING
         // All these debugging calls need to be left at the bottom. if not this could causes issues. 
@@ -340,6 +355,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         }
         #endregion
     }
+    #endregion
 
     #region Removed FixedUpdate
     // Removed for it was clashing with the NPC
@@ -444,7 +460,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump"))
         {
-            currentStamina -= 5;
             anim.SetBool("Jabbing", true);
         }
         else
@@ -458,7 +473,6 @@ public abstract class DB_Base_Class : MonoBehaviour
         // Change this button later
         if (Input.GetButtonDown("Fire1"))
         {
-            currentStamina -= 10;
             anim.SetBool("Body Punch", true);
         }
         else
@@ -471,16 +485,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 
-    #region What is this Function for
-    // This function allows NPC or Player to pick up an object to use in a fight
-    // However might be taken away and instead use power up pickups
-    #endregion
-    #region PickUp Weapon
-    protected virtual void PickUp_Weapon()
-    {
 
-    }
-    #endregion
 
     #region What Is This Function
     // This function is used in the derived class for the AI referee
@@ -527,10 +532,56 @@ public abstract class DB_Base_Class : MonoBehaviour
     //// No stamina means you cant move and your punches are pointless 
     //// It leaves more strategic thinking on the players behalf
     //#endregion
-    #region Stamina Monitor Function
-    protected virtual void StaminaForce()
+
+    #region Stamina Bar
+    protected virtual void Fighter_Stamina()
     {
-        // This will calculate how much power the player pushes the Enemy depending on the current stamina 
+        if(currentStamina > 0)
+        {
+            currentStamina -= damage_Stamina;
+            return;
+        }
+        else
+        {
+            coreHealth -= damage_Stamina;
+        }
+
+        #region Monitoring Stamina for less or more force
+        // The more stamina the more force pushing Fighters and NPCs back 
+        // This will calculate how much power the player pushes the Enemy depending on the current stamina
+
+
+
+        #endregion
+    }
+    #endregion
+
+    #region Increase Stamina
+    protected virtual void Regenerate_Stamina()
+    {
+        // Decrease Timer
+        increase_Stamina_timer -= Time.deltaTime;
+        // if the timer meets 0 or more
+        if(increase_Stamina_timer <= 0)
+        {
+            // if the stamina value of the fighter is less than 200
+            if (currentStamina < 200)
+            {
+                // reset the timer
+                increase_Stamina_timer = 5f;
+                // Increase the current stamina value
+                currentStamina += increase_Stamina;
+            }
+            // However if the current stamina is not less than the specific value
+            else
+            {
+                //Reset the timer
+                increase_Stamina_timer = 5f;
+                    // Return nothing else
+                    return;
+            }
+                
+        }
     }
     #endregion
 }

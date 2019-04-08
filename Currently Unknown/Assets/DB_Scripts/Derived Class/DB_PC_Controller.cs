@@ -21,6 +21,7 @@ public class DB_PC_Controller : DB_Base_Class
     {
         Movement();
         Melee_Combat();
+        Regenerate_Stamina();
         // For now this will work
         // This timer will be a monitor for our players hand colliders
         // we want it to tick down all the time because we dont want our players colliders to be punching the NPC in a none fight state
@@ -58,13 +59,13 @@ public class DB_PC_Controller : DB_Base_Class
         anim.SetFloat("Side Speed", Horizontal * speed);
 
         // if the A, D, Left Arrow or Right Arrow are pushed down well a Animator Parameter boolean sets to true
-        if (Input.GetButton("Strafe") | Input.GetKeyDown(KeyCode.LeftArrow) | Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetButtonDown("Strafe"))
         {
             // The gameObjects animator in dervied classes finds boolean parameter and sets it true
             anim.SetBool("SideStrife", true);
         }
         // However any of the A, D, Left Arrowor Right Arrow are no longer held down
-        else if (Input.GetKeyUp(KeyCode.A) | Input.GetKeyUp(KeyCode.D) | Input.GetKeyUp(KeyCode.LeftArrow) | Input.GetKeyUp(KeyCode.RightArrow))
+        else if (Input.GetButtonUp("Strafe"))
         {
             // parameter animator boolean is not true and new animation plays depending on what you set next
             anim.SetBool("SideStrife", false);
@@ -73,9 +74,9 @@ public class DB_PC_Controller : DB_Base_Class
         base.Movement();
     }
 
-    public void StaminaHurt(int hurt, Vector3 direction)
+    protected override void Fighter_Stamina()
     {
-        currentStamina -= hurt;
+        base.Fighter_Stamina();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -84,8 +85,24 @@ public class DB_PC_Controller : DB_Base_Class
         {
             //Vector3 pushDirection = other.transform.position - transform.position;
             //pushDirection = -pushDirection.normalized;
+            anim.SetBool("Head_Hit", true);
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * 100);
+            Fighter_Stamina();
             Debug.Log("Im Being Called");
         }
+
+        if(other.gameObject.tag == "NPC_RHand")
+        {
+            anim.SetBool("Stomach_Hit", true);
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * 100);
+            Fighter_Stamina();
+            Debug.Log("Im Being Called");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        anim.SetBool("Head_Hit", false);
+        anim.SetBool("Stomach_Hit", false);
     }
 }

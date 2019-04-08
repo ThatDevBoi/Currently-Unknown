@@ -5,11 +5,14 @@ using UnityEngine;
 public class DB_NPC_Fighter : DB_Base_Class
 {
     // Value that subtracts from the players stamina 
-    public int damageToGive = 5;
+    //public int damageToGive = 5;
     public Transform opponent;
     public float Stopping_Distance;
     public bool beenHit = false;
     public float coolDown_fromhit = 1f;
+    private bool close_to_hit = false;
+    public float time_Between_Attacks;
+    public float attacktimer = 1.5f;
 
     // Start is called before the first frame update
     protected override void Start()
@@ -17,12 +20,15 @@ public class DB_NPC_Fighter : DB_Base_Class
         // Find the player 
         opponent = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         base.Start();
+        leftHand_SC.enabled = false;
+        rightHand_SC.enabled = false;
     }
 
     // Update is called once per frame
     void Update()
     {
         Movement();
+        Regenerate_Stamina();
         #region placeholder movement (Invalid now)
         // PlaceHolder for how movement will work 
         //if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
@@ -36,6 +42,38 @@ public class DB_NPC_Fighter : DB_Base_Class
         //    speed = 0;
         //}
         #endregion
+
+        if(close_to_hit)
+        {
+            time_Between_Attacks -= Time.deltaTime;
+            if(time_Between_Attacks <=0)
+            {
+                // For clean Fighting 
+                int randomAttack = Random.Range(1, 3);
+                anim.SetInteger("Attack", randomAttack);
+                time_Between_Attacks = attacktimer;
+
+                if (currentStamina < 100)
+                {
+                    // Clean and dirty Fighting
+                    int randomAttacks = Random.Range(1, 4);
+                    anim.SetInteger("Attack", randomAttacks);
+                    time_Between_Attacks = attacktimer;
+                }
+                else
+                    return;
+            }
+        }
+    }
+
+    protected override void Fighter_Stamina()
+    {
+        base.Fighter_Stamina();
+    }
+
+    protected override void Regenerate_Stamina()
+    {
+        base.Regenerate_Stamina();
     }
 
     protected override void Movement()
@@ -49,6 +87,7 @@ public class DB_NPC_Fighter : DB_Base_Class
                 // when the transform of this gameObject is still grater than the stopping point value
                 if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
                 {
+                    close_to_hit = false;
                     // Let there be speed
                     speed = 1;
                     // Allow the moveDirection to be forward 
@@ -62,7 +101,9 @@ public class DB_NPC_Fighter : DB_Base_Class
                 }
                 else if (Vector3.Distance(transform.position, opponent.position) < Stopping_Distance)
                 {
-                    anim.SetBool("Jabbing", true);
+                    // Pick a number between 1 and 3
+                    close_to_hit = true;
+                    //anim.SetBool("Jabbing", true);
                 }
             }
             // when the boolean strikes true
@@ -73,6 +114,7 @@ public class DB_NPC_Fighter : DB_Base_Class
                 // when the cooldown is greater or is 0
                 if (coolDown_fromhit <= 0)
                 {
+                    //anim.SetBool("Jabbing", false);
                     // revert boolean back to orginal state
                     beenHit = false;
                     // reset the value of cooldown
@@ -84,7 +126,6 @@ public class DB_NPC_Fighter : DB_Base_Class
         }
         // Make sure the AI moves with the opponets X values
         transform.position = new Vector3(opponent.position.x, transform.position.y, transform.position.z);
-
         base.Movement();
     }
 
@@ -92,7 +133,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     {
         if (other.gameObject.tag == "PC_Hand")
         {
-            currentStamina -= damageToGive;
+            Fighter_Stamina();
             beenHit = true;
             #region Removed
             // Removed for it didnt work the way i would have wanted it to
@@ -106,7 +147,9 @@ public class DB_NPC_Fighter : DB_Base_Class
 
         if(other.gameObject.tag == "PC_RHand")
         {
-            currentStamina -= damageToGive;
+            // Change damage value for body punch
+            damage_Stamina = 10;
+            Fighter_Stamina();
             beenHit = true;
             #region Removed
             // Removed for it didnt work the way i would have wanted it to
@@ -121,6 +164,8 @@ public class DB_NPC_Fighter : DB_Base_Class
 
     public void OnTriggerExit(Collider other)
     {
+        // Reset damage stamina value to default
+        damage_Stamina = 5;
         anim.SetBool("HeadHit", false);
         anim.SetBool("BodyHit", false);
     }
