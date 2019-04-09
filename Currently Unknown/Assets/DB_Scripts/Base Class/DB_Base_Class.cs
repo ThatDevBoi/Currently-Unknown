@@ -25,9 +25,6 @@ using UnityEngine;
 // Helped with referee movement choice //https://answers.unity.com/questions/1179375/placing-an-object-between-2-objects.html
 #endregion
 #region Base Class
-//[RequireComponent(typeof(Rigidbody))]
-//[RequireComponent(typeof(CapsuleCollider))]
-//[RequireComponent(typeof(Animator))]
 public abstract class DB_Base_Class : MonoBehaviour
 {
     #region Player and NPC variables

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641258, b: 0.574817, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -676,6 +676,14 @@ PrefabInstance:
       propertyPath: m_TagString
       value: NPC_Fighter
       objectReference: {fileID: 0}
+    - target: {fileID: 100020, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
+      propertyPath: m_TagString
+      value: NPC_Hand
+      objectReference: {fileID: 0}
+    - target: {fileID: 100082, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
+      propertyPath: m_TagString
+      value: NPC_RHand
+      objectReference: {fileID: 0}
     - target: {fileID: 400004, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.05
@@ -720,14 +728,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 100020, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
-      propertyPath: m_TagString
-      value: NPC_Hand
-      objectReference: {fileID: 0}
-    - target: {fileID: 100082, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
-      propertyPath: m_TagString
-      value: NPC_RHand
-      objectReference: {fileID: 0}
     - target: {fileID: 9500000, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
       propertyPath: m_Controller
       value: 
@@ -736,6 +736,10 @@ PrefabInstance:
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 13700002, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 8dabff29b4518144b8347fc70acb1b3f, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b682f38a71bb3c498d64cbc0c45d5e9, type: 3}
 --- !u!1 &542209106
@@ -2682,6 +2686,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ybot@Idle
       objectReference: {fileID: 0}
+    - target: {fileID: 472016756, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 472016758, guid: 0896547b850787943b3862b49cb474a4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2725,6 +2733,24 @@ PrefabInstance:
     - target: {fileID: 472016758, guid: 0896547b850787943b3862b49cb474a4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_CullingMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_WarningMessage
+      value: "\nBinding warning: Some generic clip(s) animate transforms that are
+        already bound by a Humanoid avatar. These transforms can only be changed by
+        Humanoid clips.\n\tTransform 'mixamorig:Hips'\n\tTransform 'mixamorig:LeftFoot'\n\tTransform
+        'mixamorig:Spine1'\n\tTransform 'mixamorig:LeftToeBase'\n\tTransform 'mixamorig:RightArm'\n\tTransform
+        'mixamorig:LeftLeg'\n\tTransform 'mixamorig:LeftShoulder'\n\tTransform 'mixamorig:RightFoot'\n\tTransform
+        'mixamorig:Head'\n\tTransform 'mixamorig:LeftUpLeg'\n\tand more ...\n\tFrom
+        animation clip 'Stomach Hit'"
+      objectReference: {fileID: 0}
+    - target: {fileID: 472016757, guid: 0896547b850787943b3862b49cb474a4, type: 3}
+      propertyPath: m_UpdateMode
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0896547b850787943b3862b49cb474a4, type: 3}

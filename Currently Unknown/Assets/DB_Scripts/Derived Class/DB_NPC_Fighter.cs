@@ -50,6 +50,12 @@ public class DB_NPC_Fighter : DB_Base_Class
             {
                 // For clean Fighting 
                 int randomAttack = Random.Range(1, 3);
+                if (randomAttack == 1)
+                {
+                    leftHand_SC.enabled = true;
+                }
+                else
+                    leftHand_SC.enabled = false;
                 anim.SetInteger("Attack", randomAttack);
                 time_Between_Attacks = attacktimer;
 
@@ -165,7 +171,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     public void OnTriggerExit(Collider other)
     {
         // Reset damage stamina value to default
-        damage_Stamina = 5;
+        //damage_Stamina = 5;
         anim.SetBool("HeadHit", false);
         anim.SetBool("BodyHit", false);
     }

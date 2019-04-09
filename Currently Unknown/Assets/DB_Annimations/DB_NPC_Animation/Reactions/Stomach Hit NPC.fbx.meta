@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: bfc74043dcb0351488cffee2573a9998
+guid: 3ddba4765c5874f40b00e0515daef446
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
@@ -147,7 +147,7 @@ ModelImporter:
     2100002: Alpha_Joints_MAT
     4300000: Alpha_Surface
     4300002: Alpha_Joints
-    7400000: Stomach Hit
+    7400000: Stomach Hit NPC
     9500000: //RootNode
     13700000: Alpha_Joints
     13700002: Alpha_Surface
@@ -169,7 +169,7 @@ ModelImporter:
     animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
-    importAnimatedCustomProperties: 0
+    importAnimatedCustomProperties: 1
     importConstraints: 0
     animationCompression: 3
     animationRotationError: 0.5
@@ -180,7 +180,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Stomach Hit
+      name: Stomach Hit NPC
       takeName: mixamo.com
       firstFrame: 0
       lastFrame: 28
@@ -192,7 +192,7 @@ ModelImporter:
       hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 0
-      loopBlendOrientation: 0
+      loopBlendOrientation: 1
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
       keepOriginalOrientation: 0
@@ -663,23 +663,23 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: Stomach Hit(Clone)
+    - name: Stomach Hit NPC(Clone)
       parentName: 
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Alpha_Surface
-      parentName: Stomach Hit(Clone)
+      parentName: Stomach Hit NPC(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Alpha_Joints
-      parentName: Stomach Hit(Clone)
+      parentName: Stomach Hit NPC(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:Hips
-      parentName: Stomach Hit(Clone)
+      parentName: Stomach Hit NPC(Clone)
       position: {x: 0.00059976097, y: 0.8521771, z: -0.0037586596}
       rotation: {x: -0.043131575, y: -0.39236516, z: 0.018079251, w: 0.9186199}
       scale: {x: 1, y: 1, z: 1}
