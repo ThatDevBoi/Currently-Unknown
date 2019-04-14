@@ -210,7 +210,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         #endregion
 
         #region Referee Logic void
-        protected virtual void RefereeAI()
+        protected virtual void RefereeMovement()
         {
             // Side note for next time
             // make boolean for when offender is caught make the referee go between both fighters. This way no one can attack and both fighters go back to their corners
@@ -230,6 +230,30 @@ public abstract class DB_Base_Class : MonoBehaviour
 
     public class AI_Crowed : MonoBehaviour
     {
+        // Variables 
+        public GameObject object_To_Throw;
+        public bool canThrowObject;
+        public float speed;
+        public float gravity;
+        public float damageHealth;
+
+        // Logic for the GameObject that will be thrown from the crowed
+        public void PhysicsObject()
+        {
+
+        }
+
+        // Function called to allow the NPC to throw the physics object
+        public void ActivateTheThrow()
+        {
+            if (DB_NPC_Fighter.illegalElbow == true && DB_RefereeAI.saw_Elbow == false)
+                canThrowObject = true;
+
+            if(canThrowObject)
+            {
+                // Throw the object at the correct NPCs
+            }
+        }
         // When a Fighter does an illegal move
         // Decide a random object PC, Ref or NPC, Ref and throw an object at them
         // If the object hits stun the fighter or ref

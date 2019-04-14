@@ -11,6 +11,8 @@ public class DB_NPC_Fighter : DB_Base_Class
     public bool beenHit = false;
     public float coolDown_fromhit = 1f;
     private bool close_to_hit = false;
+    // A boolean that allows the AI referee to start checking for illegal moves
+    public static bool illegalElbow = false;
     public float time_Between_Attacks;
     public float attacktimer = 1.5f;
 
@@ -27,6 +29,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(illegalElbow);
         Movement();
         Regenerate_Stamina();
         #region placeholder movement (Invalid now)
@@ -43,31 +46,44 @@ public class DB_NPC_Fighter : DB_Base_Class
         //}
         #endregion
 
-        if(close_to_hit)
+        if(DB_RefereeAI.saw_Elbow == false)
         {
-            time_Between_Attacks -= Time.deltaTime;
-            if(time_Between_Attacks <=0)
+            if (close_to_hit)
             {
-                // For clean Fighting 
-                int randomAttack = Random.Range(1, 3);
-                if (randomAttack == 1)
+                time_Between_Attacks -= Time.deltaTime;
+                if (time_Between_Attacks <= 0)
                 {
-                    leftHand_SC.enabled = true;
-                }
-                else
-                    leftHand_SC.enabled = false;
-                anim.SetInteger("Attack", randomAttack);
-                time_Between_Attacks = attacktimer;
-
-                if (currentStamina < 100)
-                {
-                    // Clean and dirty Fighting
-                    int randomAttacks = Random.Range(1, 4);
-                    anim.SetInteger("Attack", randomAttacks);
+                    // For clean Fighting 
+                    int randomAttack = Random.Range(1, 3);
+                    if (randomAttack == 1)
+                    {
+                        leftHand_SC.enabled = true;
+                    }
+                    else
+                        leftHand_SC.enabled = false;
+                    if (randomAttack == 2)
+                    {
+                        rightHand_SC.enabled = true;
+                    }
+                    else
+                        rightHand_SC.enabled = false;
+                    anim.SetInteger("Attack", randomAttack);
                     time_Between_Attacks = attacktimer;
+
+                    if (currentStamina < 100)
+                    {
+                        // Clean and dirty Fighting
+                        int randomAttacks = Random.Range(1, 4);
+                        if (randomAttacks == 3)
+                            illegalElbow = true;
+                        else
+                            illegalElbow = false;
+                        anim.SetInteger("Attack", randomAttacks);
+                        time_Between_Attacks = attacktimer;
+                    }
+                    else
+                        return;
                 }
-                else
-                    return;
             }
         }
     }
@@ -84,55 +100,59 @@ public class DB_NPC_Fighter : DB_Base_Class
 
     protected override void Movement()
     {
-        // when the value is 1 or more
-        if (coolDown_fromhit <= 1)
+        if(DB_RefereeAI.saw_Elbow == false)
         {
-            // When the boolean in this class is false
-            if (!beenHit)
+            // when the value is 1 or more
+            if (coolDown_fromhit <= 1)
             {
-                // when the transform of this gameObject is still grater than the stopping point value
-                if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
+                // When the boolean in this class is false
+                if (!beenHit)
                 {
-                    close_to_hit = false;
-                    // Let there be speed
-                    speed = 1;
-                    // Allow the moveDirection to be forward 
-                    moveDirection = (transform.position += transform.forward * speed * Time.deltaTime);
-                    // Make sure the moveDirection value isnt more than 1 
-                    moveDirection = moveDirection.normalized * speed;
-                    // zero out the gravity we dont need it
-                    moveDirection.y = moveDirection.y + Physics.gravity.y;
-                    // Move that GameObject towards its target using the moveDirection
-                    playerRB.velocity = moveDirection;
+                    // when the transform of this gameObject is still grater than the stopping point value
+                    if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
+                    {
+                        close_to_hit = false;
+                        // Let there be speed
+                        speed = 1;
+                        // Allow the moveDirection to be forward 
+                        moveDirection = (transform.position += transform.forward * speed * Time.deltaTime);
+                        // Make sure the moveDirection value isnt more than 1 
+                        moveDirection = moveDirection.normalized * speed;
+                        // zero out the gravity we dont need it
+                        moveDirection.y = moveDirection.y + Physics.gravity.y;
+                        // Move that GameObject towards its target using the moveDirection
+                        playerRB.velocity = moveDirection;
+                    }
+                    else if (Vector3.Distance(transform.position, opponent.position) < Stopping_Distance)
+                    {
+                        // Pick a number between 1 and 3
+                        close_to_hit = true;
+                        //anim.SetBool("Jabbing", true);
+                    }
                 }
-                else if (Vector3.Distance(transform.position, opponent.position) < Stopping_Distance)
+                // when the boolean strikes true
+                else if (beenHit)
                 {
-                    // Pick a number between 1 and 3
-                    close_to_hit = true;
-                    //anim.SetBool("Jabbing", true);
+                    // Start the cooldown timer
+                    coolDown_fromhit -= Time.deltaTime;
+                    // when the cooldown is greater or is 0
+                    if (coolDown_fromhit <= 0)
+                    {
+                        //anim.SetBool("Jabbing", false);
+                        // revert boolean back to orginal state
+                        beenHit = false;
+                        // reset the value of cooldown
+                        coolDown_fromhit = 1;
+                    }
+                    // turn off that speed
+                    speed = 0;
                 }
             }
-            // when the boolean strikes true
-            else if (beenHit)
-            {
-                // Start the cooldown timer
-                coolDown_fromhit -= Time.deltaTime;
-                // when the cooldown is greater or is 0
-                if (coolDown_fromhit <= 0)
-                {
-                    //anim.SetBool("Jabbing", false);
-                    // revert boolean back to orginal state
-                    beenHit = false;
-                    // reset the value of cooldown
-                    coolDown_fromhit = 1;
-                }
-                // turn off that speed
-                speed = 0;
-            }
+            // Make sure the AI moves with the opponets X values
+            transform.position = new Vector3(opponent.position.x, transform.position.y, transform.position.z);
+            // Adding some of the physics from the base into the AI
+            base.Movement();
         }
-        // Make sure the AI moves with the opponets X values
-        transform.position = new Vector3(opponent.position.x, transform.position.y, transform.position.z);
-        base.Movement();
     }
 
     public void OnTriggerEnter(Collider other)
