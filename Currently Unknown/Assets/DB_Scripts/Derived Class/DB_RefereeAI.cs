@@ -4,17 +4,31 @@ using UnityEngine;
 
 public class DB_RefereeAI : DB_Base_Class.Referee
 {
+    #region Variables
     public static bool saw_Elbow = false;
     [SerializeField]
-    private int percentage;
-    private Vector3 newPosition = Vector3.zero;
+    private int percentage; // int that will randomly generate a number. We do this so the ref may or may not see an attack
     public float timer = .3f;
+    [SerializeField]
+    private Vector3 vec_player_start;
+    [SerializeField]
+    private Vector3 vec_NPC_start;
+    [SerializeField]
+    private Transform trans_players;
+    [SerializeField]
+    private Transform trans_npc;
+    #endregion
+
     // Start is called before the first frame update
     void Start()
     {
+        // Find the IDE transform components
+        trans_players = GameObject.Find("Player_Fighter").GetComponent<Transform>();
+        trans_npc = GameObject.Find("NPC_Fighter").GetComponent<Transform>();
         // Record the 2 fighters first ever position on the first frame
-        Vector3 PC_start_pos = vec_playerFighter;
-        Vector3 NPC_startPos = vec_NPCFighter;
+        // allow the Vector to be called once so we gain the players start pos and NPC
+        vec_player_start = trans_players.position; 
+        vec_NPC_start = trans_npc.position;     
     }
 
     // Update is called once per frame
@@ -28,41 +42,71 @@ public class DB_RefereeAI : DB_Base_Class.Referee
         transform.position = new Vector3(vec_NPCFighter.x, transform.position.y, transform.position.z);
         // Call referee logic from base
         RefereeMovement();
-
-        if(DB_NPC_Fighter.illegalElbow == true)
+        // if a static boolean in DB_NPC_Fighter is true
+        if(DB_NPC_Fighter.illegalElbow)
         {
+            // Call void
             TakeAction();
         }
     }
+    // Reset Referee state variables
+    // These variables stop the referee from stopping the fight ever 1 second
+    public float resetBool = 3f;
+    public float resetRef_Timer = 1f;
+    public bool ResetRef = false;
 
     public void TakeAction()
     {
-        timer -= Time.deltaTime;
-        if (timer <= 0)
+        // if the ref sees an illegal elbow
+        if (saw_Elbow)
+            resetBool -= Time.deltaTime;    // Tick down the reset timer for the bool
+        if(resetBool <= 0)  // When float is more than or equal to 0
         {
-            timer = .3f;
-            percentage = Random.Range(0, 13);
+            saw_Elbow = false;  // boolean is now false
+            ResetRef = true;    // Next state for ref boolean is now true
+
+            if(ResetRef)    // When the reset state boolean for ref is true
+            {
+                // We use the timer to gain more control over when the next state happens
+                resetRef_Timer -= Time.deltaTime;   // Decrease ref timer
+                
+                if (resetRef_Timer <= 0)    // When float value is more or equal to 0
+                {
+                    percentage = 0;
+                    // reset the timer value
+                    resetBool = 3f; 
+                    resetRef_Timer = 1f;
+                    ResetRef = false;   // tick boolean back to false so ref can be back in orginal state
+                }
+            }
+        }
+        // Allowing the ref to decide if he sees the illegal attack by generating the percentage number randomly
+        timer -= Time.deltaTime;    // Decrease timer
+        if (timer <= 0)     // When timer is 0 or beyond
+        {
+            timer = 4f; // Reset timer
+            if(!saw_Elbow && !ResetRef) // if the relevant booleans are false
+            {
+                percentage = Random.Range(0, 13);   // Decide a random number between 0 & 13
+            }
         }
 
-        Debug.Log(percentage);
-        if (percentage > 6)
+        Debug.Log(saw_Elbow);
+        if (percentage > 6) // if random percentage value is greater than 6 so 7, 8, 9, 10, 11 and 12
         {
-            saw_Elbow = true;
+            saw_Elbow = true;   // Boolean is true the ref saw those sketchy elbow attacks
         }
-        else
-           saw_Elbow = false;
+        else     // if its not over 6
+           saw_Elbow = false;   // ref didnt see it, he dont care
         
-
+        // When the ref sees that sketchy elbow
         if (saw_Elbow)
         {
-            transform.position = new Vector3(0.05f, transform.position.y, transform.position.z);
-            float time = 3;
-            time -= Time.deltaTime;
-            if(time <= 0)
-            {
-                //saw_Elbow = false;
-                time = 3;
-            }
+            // Ref stands between both fighters
+            transform.position = new Vector3(0, transform.position.y, transform.position.z);
+            // Ref pushes fighters into there corners
+            trans_players.position = vec_player_start;   
+            trans_npc.position = vec_NPC_start;
         }
     }
 }

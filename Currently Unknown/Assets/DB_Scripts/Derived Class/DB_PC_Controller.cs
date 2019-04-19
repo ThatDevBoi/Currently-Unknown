@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class DB_PC_Controller : DB_Base_Class
 {
-    public Transform NPC_target;
     // Hand colliders monitor
     public float turnOff_colliders = 1f;
 
@@ -19,9 +18,14 @@ public class DB_PC_Controller : DB_Base_Class
 
     private void FixedUpdate()
     {
-        Movement();
+        if(DB_RefereeAI.saw_Elbow == false)
+        {
+            Movement();
+        }
+
         Melee_Combat();
         Regenerate_Stamina();
+        base.Stamina_Montior();
         // For now this will work
         // This timer will be a monitor for our players hand colliders
         // we want it to tick down all the time because we dont want our players colliders to be punching the NPC in a none fight state
@@ -32,23 +36,32 @@ public class DB_PC_Controller : DB_Base_Class
             // Just turn off the colliders
             leftHand_SC.enabled = false;
             rightHand_SC.enabled = false;
+            elbow_SC.enabled = false;
         }
 
         if (Input.GetButton("Fire1"))
         {
             turnOff_colliders = 1;
-            leftHand_SC.enabled = false;
             rightHand_SC.enabled = true;
+            leftHand_SC.enabled = false;
+            elbow_SC.enabled = false;
         }
-        
+
+        if(Input.GetButton("Fire2"))
+        {
+            turnOff_colliders = 1;
+            elbow_SC.enabled = true;
+            leftHand_SC.enabled = false;
+            rightHand_SC.enabled = false;
+        }
+
         if (Input.GetButton("Jump"))
         {
             turnOff_colliders = 1;
-            rightHand_SC.enabled = false;
             leftHand_SC.enabled = true;
+            rightHand_SC.enabled = false;
+            elbow_SC.enabled = false;
         }
-        
-
     }
 
     protected override void Movement()
@@ -83,10 +96,8 @@ public class DB_PC_Controller : DB_Base_Class
     {
         if (other.gameObject.tag == "NPC_Hand")
         {
-            //Vector3 pushDirection = other.transform.position - transform.position;
-            //pushDirection = -pushDirection.normalized;
             anim.SetBool("Head_Hit", true);
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * 100);
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             Fighter_Stamina();
             Debug.Log("Im Being Called");
         }
@@ -94,7 +105,7 @@ public class DB_PC_Controller : DB_Base_Class
         if(other.gameObject.tag == "NPC_RHand")
         {
             anim.SetBool("Stomach_Hit", true);
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * 100);
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             Fighter_Stamina();
             Debug.Log("Im Being Called");
         }

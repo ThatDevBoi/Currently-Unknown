@@ -15,6 +15,12 @@ public class DB_NPC_Fighter : DB_Base_Class
     public static bool illegalElbow = false;
     public float time_Between_Attacks;
     public float attacktimer = 1.5f;
+    public float time_for_elbow;
+    public int canElbow = 0;
+    // stats variables
+    public int fighterType;
+    public Material[] visualMaterials;
+    public GameObject bodymat;
 
     // Start is called before the first frame update
     protected override void Start()
@@ -22,16 +28,28 @@ public class DB_NPC_Fighter : DB_Base_Class
         // Find the player 
         opponent = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         base.Start();
+        // Turn off colliders attached to hands
         leftHand_SC.enabled = false;
         rightHand_SC.enabled = false;
+        // Lets decide what fighter the player goes against
+        TypeOfFighter();
     }
 
     // Update is called once per frame
     void Update()
     {
+        base.Stamina_Montior();
+        // NPC Dead
+        // We have this so there is a continue state 
+        if (coreHealth <= 0)
+            anim.SetBool("KnockedOut", true);
         Debug.Log(illegalElbow);
-        Movement();
+        if(DB_RefereeAI.saw_Elbow == false)
+        {
+            Movement();
+        }
         Regenerate_Stamina();
+        Stamina_Montior();
         #region placeholder movement (Invalid now)
         // PlaceHolder for how movement will work 
         //if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
@@ -46,46 +64,77 @@ public class DB_NPC_Fighter : DB_Base_Class
         //}
         #endregion
 
+        if(!close_to_hit)
+        {
+            leftHand_SC.enabled = false;
+            rightHand_SC.enabled = false;
+        }
+
         if(DB_RefereeAI.saw_Elbow == false)
         {
             if (close_to_hit)
             {
-                time_Between_Attacks -= Time.deltaTime;
-                if (time_Between_Attacks <= 0)
+                // Fighter throws standard jabs and body punches
+                CleanFighting();
+                // Stamina needs to meet a value for this to be called
+                Dirty_Fighting(); 
+            }
+        }
+        if (DB_RefereeAI.saw_Elbow == false)
+        {
+            if (canElbow == 1)
+            {
+                time_Between_Attacks = attacktimer; // Reset clean attack timer
+                time_for_elbow -= Time.deltaTime;
+                if (time_for_elbow <= 0)
                 {
-                    // For clean Fighting 
-                    int randomAttack = Random.Range(1, 3);
-                    if (randomAttack == 1)
+                    time_for_elbow = 6;
+                    // Clean and dirty Fighting
+                    int randomAttacks = Random.Range(1, 27);
+
+                    // Jabbing
+                    if (randomAttacks > 1)
                     {
+                        anim.SetBool("Jabbing", true);
+                        anim.SetBool("Body Punch", false);
                         leftHand_SC.enabled = true;
+                        rightHand_SC.enabled = false;
                     }
                     else
                         leftHand_SC.enabled = false;
-                    if (randomAttack == 2)
+
+                    // Body Punch
+                    if (randomAttacks > 10)
                     {
+                        anim.SetBool("Body Punch", true);
+                        anim.SetBool("Jabbing", false);
                         rightHand_SC.enabled = true;
+                        leftHand_SC.enabled = false;
                     }
                     else
                         rightHand_SC.enabled = false;
-                    anim.SetInteger("Attack", randomAttack);
-                    time_Between_Attacks = attacktimer;
 
-                    if (currentStamina < 100)
+                    // illegal Elbow
+                    if (randomAttacks > 21)
                     {
-                        // Clean and dirty Fighting
-                        int randomAttacks = Random.Range(1, 4);
-                        if (randomAttacks == 3)
-                            illegalElbow = true;
-                        else
-                            illegalElbow = false;
-                        anim.SetInteger("Attack", randomAttacks);
-                        time_Between_Attacks = attacktimer;
-                    }
+                        anim.SetBool("Elbow", true);
+                        anim.SetBool("Body Punch", false);
+                        anim.SetBool("Jabbing", false);
+                        illegalElbow = true;
+                    }   
                     else
-                        return;
+                    {
+                        anim.SetBool("Elbow", false);
+                        illegalElbow = false;
+                    }
+
+                    //anim.SetInteger("Attack", randomAttacks);
+                    time_Between_Attacks = attacktimer;
                 }
             }
         }
+        else
+            return;
     }
 
     protected override void Fighter_Stamina()
@@ -93,9 +142,61 @@ public class DB_NPC_Fighter : DB_Base_Class
         base.Fighter_Stamina();
     }
 
+    public void CleanFighting()
+    {
+        if(canElbow == 0)
+        {
+            time_Between_Attacks -= Time.deltaTime;
+            if (time_Between_Attacks <= 0)
+            {
+                // For clean Fighting 
+                int randomAttack = Random.Range(1, 21);
+                // jabbing
+                if (randomAttack > 1)
+                {
+                    anim.SetBool("Jabbing", true);
+                    anim.SetBool("Body Punch", false);
+                    leftHand_SC.enabled = true;
+                    rightHand_SC.enabled = false;
+                }
+                else
+                    leftHand_SC.enabled = false;
+
+                if (randomAttack > 10)
+                {
+                    anim.SetBool("Body Punch", true);
+                    anim.SetBool("Jabbing", false);
+                    rightHand_SC.enabled = true;
+                    leftHand_SC.enabled = false;
+                }
+                else
+                    rightHand_SC.enabled = false;
+
+                //anim.SetInteger("Attack", randomAttack);
+                time_Between_Attacks = attacktimer;
+
+            }
+        }
+    }
+
+    public void Dirty_Fighting()
+    {
+        if (currentStamina < 100)
+        {
+            canElbow = 1;
+        }
+        else
+            canElbow = 0;
+    }
+
     protected override void Regenerate_Stamina()
     {
         base.Regenerate_Stamina();
+    }
+
+    protected override void Stamina_Montior()
+    {
+        base.Stamina_Montior();
     }
 
     protected override void Movement()
@@ -155,6 +256,44 @@ public class DB_NPC_Fighter : DB_Base_Class
         }
     }
 
+    #region Choose Fighter
+    private void TypeOfFighter()
+    {
+        fighterType = Random.Range(0, 7);
+        // Use cases so there will be 6 fighters with different stats (in other words different values for speed,force etc)
+        // We gain all control of player stats
+        switch (fighterType)
+        {
+            // Prototype of how random fighter states will be generated
+            case 1:
+                print("Hello");
+                // Change colour of fighter so there is a visual difference
+                bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[0];
+                break;
+            case 2:
+                print("Hello there");
+                bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[1];
+                break;
+            case 3:
+                print("Hello there my");
+                bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[2];
+                break;
+            case 4:
+                print("Hello there my friend");
+                bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[3];
+                break;
+            case 5:
+                print("Hello there my friend Joe");
+                bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[4];
+                break;
+            case 6:
+                print("Yo Joe You Want Blow");
+                bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[5];
+                break;
+        }
+    }
+    #endregion
+
     public void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "PC_Hand")
@@ -167,7 +306,7 @@ public class DB_NPC_Fighter : DB_Base_Class
             //pushDirection = -pushDirection.normalized;
             #endregion
             anim.SetBool("HeadHit", true);
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * 100);
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             
         }
 
@@ -184,7 +323,7 @@ public class DB_NPC_Fighter : DB_Base_Class
             #endregion
             anim.SetBool("BodyHit", true);
             // Could increase this value later?
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * 100);
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
         }
     }
 

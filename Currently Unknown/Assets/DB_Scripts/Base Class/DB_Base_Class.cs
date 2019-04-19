@@ -1,5 +1,6 @@
 ﻿#region Unity Engine Using
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 #endregion
@@ -34,6 +35,8 @@ public abstract class DB_Base_Class : MonoBehaviour
     [SerializeField]
     protected SphereCollider leftHand_SC;
     [SerializeField]
+    protected SphereCollider elbow_SC;
+    [SerializeField]
     protected CapsuleCollider body_CapsuleCollider;
     [SerializeField]
     protected SphereCollider head_Collider;
@@ -41,10 +44,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     protected BoxCollider body_Collider;
     [SerializeField]
     protected Rigidbody playerRB;
-    [SerializeField]
-    protected float gravity = 15;
-    [SerializeField]
-    protected float rbMass = 2;
     #endregion
 
     #region Movement
@@ -63,18 +62,13 @@ public abstract class DB_Base_Class : MonoBehaviour
     #endregion
 
     #region Fighting 
-    //[SerializeField]
-    //protected float Hitmass = 5;    // Used to devide the force depending on the players stamina
-
     // This is a value that pushes the players and NPCs back when punches. 
     // However the stamina value will effect the vlaue of force that players and NPCs can apply so it adds
     // Strategic gameplay that allows players to back away
-    // Also there will be a system where players can upgarde their stamina
     [SerializeField]
-    protected float pushForce = 30;
+    protected float pushBack = 100;     // This is increased to make the player or NPC fly back further
     [SerializeField]
-    protected float fl_knockBackTime;   // Used so players can get spammed with punches
-    protected float fl_knockBackCounter;    // 
+    protected float pushForce = 30;     // This is how much we multiply by the pushBack force
     // The current amount of stamina the player or NPC has.
     // We use this to place the correct amount of stamina value each time the game is played
     [SerializeField]
@@ -93,7 +87,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     protected float increase_Stamina_timer = 5f;
     #endregion
     #endregion
-
 
     #region Camera Movement Class
     [SerializeField]
@@ -191,7 +184,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     #endregion
 
     #region AI Referee Class
-    [SerializeField]
     public class Referee : MonoBehaviour
     {
         #region Referee Variables 
@@ -202,20 +194,11 @@ public abstract class DB_Base_Class : MonoBehaviour
         [SerializeField]
         protected Vector3 centerPoint;  // This Vector3 Reference tells the referee GameObject in the scene where to be depending on the PC and NPC position
         // There needs to be a Vector which allows the Referee to move between the 2 fighters when an offender does a illegal move
-
-        // Booleans offenderMissed and offenderCaught can change state of game
-        // if offenderCaught eventually = true then the referee GameObject steps between the fighters. 
-        private bool offenderMissed = true;     // referee didnt see PC or NPC elbowing
-        private bool offenderCaught = false;    // Referee did see the PC/NPC elbowing
         #endregion
 
         #region Referee Logic void
         protected virtual void RefereeMovement()
         {
-            // Side note for next time
-            // make boolean for when offender is caught make the referee go between both fighters. This way no one can attack and both fighters go back to their corners
-
-
             // Find the 2 Objects that the ref needs to stay between
             centerPoint = (vec_playerFighter + vec_NPCFighter) * 0.5f;
             //transform.position = new Vector3(-3, transform.position.y, transform.position.z);
@@ -230,28 +213,66 @@ public abstract class DB_Base_Class : MonoBehaviour
 
     public class AI_Crowed : MonoBehaviour
     {
+        public class MathParabola
+        {
+            public static Vector3 Parabola(Vector3 start, Vector3 end, float height, float t)
+            {
+                Func<float, float> f = x => -4 * height * x * x + 4 * height * x;
+                var mid = Vector3.Lerp(start, end, t);
+                return new Vector3(mid.x, f(t) + Mathf.Lerp(start.y, end.y, t), mid.z);
+            }
+        }
+
         // Variables 
-        public GameObject object_To_Throw;
+        [SerializeField]
+        protected GameObject object_To_Throw;
+        [SerializeField]
+        protected Transform objectThrow_Position;
+        [SerializeField]
+        protected float AttackTimer;
+        [SerializeField]
+        protected float time_between_throws = 6;
+        [SerializeField]
         public bool canThrowObject;
-        public float speed;
-        public float gravity;
-        public float damageHealth;
+        [SerializeField]
+        protected float animation;
+
 
         // Logic for the GameObject that will be thrown from the crowed
-        public void PhysicsObject()
+        protected virtual void PhysicsObject()
         {
-
+            //increase value
+            animation += Time.deltaTime;
+            // Animation lasts for 5 seconds
+            animation = animation % 5;
+            // The position of the Physics object will be the maths of the Parabola class and void
+            transform.position = MathParabola.Parabola(Vector3.zero, Vector3.forward * 10f, 5f, animation / 5f);
         }
 
         // Function called to allow the NPC to throw the physics object
-        public void ActivateTheThrow()
+        protected virtual void ActivateTheThrow()
         {
             if (DB_NPC_Fighter.illegalElbow == true && DB_RefereeAI.saw_Elbow == false)
                 canThrowObject = true;
+            else
+                canThrowObject = false;
+
+            if (!canThrowObject)
+                return;
 
             if(canThrowObject)
             {
-                // Throw the object at the correct NPCs
+                AttackTimer -= Time.deltaTime;
+                if(AttackTimer <= 0)
+                {
+                    AttackTimer = time_between_throws;
+                    object_To_Throw.gameObject.AddComponent<Rigidbody>();
+                    Instantiate(object_To_Throw, objectThrow_Position.position, Quaternion.identity);
+                }
+            }
+            else if(!canThrowObject)
+            {
+                AttackTimer = time_between_throws;
             }
         }
         // When a Fighter does an illegal move
@@ -300,6 +321,20 @@ public abstract class DB_Base_Class : MonoBehaviour
         leftHand_SC.isTrigger = true;
         leftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Resize SphereCollider
         leftHand_SC.radius = 0.07f;
+        #endregion
+        #region Elbow SetUp
+        if(gameObject.tag == "Player")
+        {
+            elbow_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm").gameObject.AddComponent<SphereCollider>();
+            elbow_SC.isTrigger = true;
+            elbow_SC.radius = 0.07f;
+        }
+        else
+        {
+            elbow_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm").gameObject.AddComponent<SphereCollider>();
+            elbow_SC.isTrigger = true;
+            elbow_SC.radius = 0.07f;
+        }
         #endregion
         #region Head Sphere Collider SetUp
         head_Collider = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head").gameObject.AddComponent<SphereCollider>();
@@ -376,17 +411,6 @@ public abstract class DB_Base_Class : MonoBehaviour
         }
         #endregion
     }
-    #endregion
-
-    #region Removed FixedUpdate
-    // Removed for it was clashing with the NPC
-    //// Update is called once per frame
-    //protected virtual void FixedUpdate()
-    //{
-    //    // Call Functions
-    //    Movement();
-    //    Melee_Combat();
-    //}
     #endregion
 
     #region Movement Function
@@ -479,80 +503,58 @@ public abstract class DB_Base_Class : MonoBehaviour
     #region Melee Combat Function
     protected virtual void Melee_Combat()
     {
+        // Jabbing input
         if (Input.GetButtonDown("Jump"))
         {
             anim.SetBool("Jabbing", true);
         }
-        else
+        else if (Input.GetButtonUp("Jump"))
         {
-            if (Input.GetButtonUp("Jump"))
-            {
-                anim.SetBool("Jabbing", false);
-            }
+            anim.SetBool("Jabbing", false);
         }
 
-        // Change this button later
+        // Body Punch Input
         if (Input.GetButtonDown("Fire1"))
         {
             anim.SetBool("Body Punch", true);
         }
-        else
+        else if(Input.GetButtonUp("Fire1"))
         {
-            if(Input.GetButtonUp("Fire1"))
-            {
-                anim.SetBool("Body Punch", false);
-            }
+            anim.SetBool("Body Punch", false);
+        }
+
+        if(Input.GetButtonDown("Fire2"))
+        {
+            anim.SetBool("Illegal_Elbow", true);
+        }
+        else if(Input.GetButtonUp("Fire2"))
+        {
+            anim.SetBool("Illegal_Elbow", false);
         }
     }
     #endregion
 
-
-
-    #region What Is This Function
-    // This function is used in the derived class for the AI referee
-    // In this class we will make sure the referee GameObject stays between 2 fighters.
-    // We will also be monitoring if any NPC or PC fighters do an illegal attack
-    // We check this so the referee can generate a number and decide if the Player/NPC gets punished for their actions
-    // We also want a state where a random fan can throw an object at the Referee to stun and stop the Object. 
-    // We are going to do this so there is a point in Gameplay where NPC and PC can just attack however they please. 
-
-    // Side note if the referee decides to notice an illegal attack both fighters go back to their corners
-    // the offender will also get a strike 3 strikes and you lose (DQ)
-    // this effect also allows for a different style of Gameplay. 
-    // Players might want to be an caught by the ref although it adds risk for them to be DQ both sides will generate stamina back
-    // players could be fighting a hard opponent get to a point and then lose all stamina 
-    #endregion
-    protected virtual void KnockBack()
-    {
-        #region Old code version 1.0
-        // Knock Back Logic
-        // For however long the knock back timer is we dont want to move
-        //fl_knockBackCounter = fl_knockBackTime;
-        //moveDirection = direction * fl_knockBackForce;
-        #endregion
-        #region old code version 1.1
-        //impactDirection = moveDirection;
-        //impactDirection.Normalize();
-        //if (impactDirection.z < 0)
-        //    impactDirection.z = impactDirection.z;      // Refect the force down
-        //moveDirection += impactDirection.normalized * force / mass;
-
-        //Debug.Log(moveDirection += impactDirection.normalized * force / mass);
-        #endregion
-
-        //impactDirection = PC_CC.velocity;
-        //moveDirection = impactDirection;
-        //impactDirection = new Vector3(transform.position.x, transform.position.y, PC_CC.velocity.z);
-
-       // impactDirection = new Vector3(transform.position.x, 0, transform.forward.z);
-    }
-
+    #region StaminaMonitor
+    #region Notes
     //// This function will be used to monitor how much energy is left in the fighter
     //// PC and NPC figters will have this bar using a UI slider to visually show it.
     //// More stamina you have the more power in your punch
     //// No stamina means you cant move and your punches are pointless 
     //// It leaves more strategic thinking on the players behalf
-    //#endregion
+    #endregion
+    protected virtual void Stamina_Montior()
+    {
+        if (currentStamina < 150)
+            pushBack = 110;
+
+        if (currentStamina < 100)
+            pushBack = 120;
+
+        if (currentStamina < 80)
+            pushBack = 140;
+
+    }
+    #endregion
 
     #region Stamina Bar
     protected virtual void Fighter_Stamina()
