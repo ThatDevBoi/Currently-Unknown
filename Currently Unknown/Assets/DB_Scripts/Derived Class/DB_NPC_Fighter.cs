@@ -44,7 +44,7 @@ public class DB_NPC_Fighter : DB_Base_Class
         if (coreHealth <= 0)
             anim.SetBool("KnockedOut", true);
         Debug.Log(illegalElbow);
-        if(DB_RefereeAI.saw_Elbow == false)
+        if(DB_RefereeAI.NPC_Saw_Elbow == false)
         {
             Movement();
         }
@@ -70,7 +70,7 @@ public class DB_NPC_Fighter : DB_Base_Class
             rightHand_SC.enabled = false;
         }
 
-        if(DB_RefereeAI.saw_Elbow == false)
+        if(DB_RefereeAI.NPC_Saw_Elbow == false)
         {
             if (close_to_hit)
             {
@@ -80,7 +80,7 @@ public class DB_NPC_Fighter : DB_Base_Class
                 Dirty_Fighting(); 
             }
         }
-        if (DB_RefereeAI.saw_Elbow == false)
+        if (DB_RefereeAI.NPC_Saw_Elbow == false)
         {
             if (canElbow == 1)
             {
@@ -201,7 +201,7 @@ public class DB_NPC_Fighter : DB_Base_Class
 
     protected override void Movement()
     {
-        if(DB_RefereeAI.saw_Elbow == false)
+        if(DB_RefereeAI.NPC_Saw_Elbow == false)
         {
             // when the value is 1 or more
             if (coolDown_fromhit <= 1)

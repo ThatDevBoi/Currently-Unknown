@@ -213,16 +213,6 @@ public abstract class DB_Base_Class : MonoBehaviour
 
     public class AI_Crowed : MonoBehaviour
     {
-        public class MathParabola
-        {
-            public static Vector3 Parabola(Vector3 start, Vector3 end, float height, float t)
-            {
-                Func<float, float> f = x => -4 * height * x * x + 4 * height * x;
-                var mid = Vector3.Lerp(start, end, t);
-                return new Vector3(mid.x, f(t) + Mathf.Lerp(start.y, end.y, t), mid.z);
-            }
-        }
-
         // Variables 
         [SerializeField]
         protected GameObject object_To_Throw;
@@ -237,22 +227,48 @@ public abstract class DB_Base_Class : MonoBehaviour
         [SerializeField]
         protected float animation;
 
-
+        protected virtual Vector3 Parabola(Vector3 start, Vector3 end, float height, float t)
+        {
+            Func<float, float> f = x => -4 * height * x * x + 4 * height * x;
+            var mid = Vector3.Lerp(start, end, t);
+            return new Vector3(mid.x, f(t) + Mathf.Lerp(start.y, end.y, t), mid.z);
+        }
+        public Transform pc;
+        public Transform npc;
+        public Transform Ref;
+        public Rigidbody rig;
+        public int target;
         // Logic for the GameObject that will be thrown from the crowed
         protected virtual void PhysicsObject()
         {
+            Debug.Log(target);
             //increase value
             animation += Time.deltaTime;
             // Animation lasts for 5 seconds
             animation = animation % 5;
-            // The position of the Physics object will be the maths of the Parabola class and void
-            transform.position = MathParabola.Parabola(Vector3.zero, Vector3.forward * 10f, 5f, animation / 5f);
+            // ref and npc and pc targets
+            switch(target)
+            {
+                // Ref
+                case 1:
+                    // The position of the Physics object will be the maths of the Parabola class and void
+                    transform.position = Parabola(new Vector3(objectThrow_Position.position.x, objectThrow_Position.position.y, objectThrow_Position.position.z), Ref.position, 5f, animation / 5f);
+                    break;
+                    // NPC
+                case 2:
+                    transform.position = Parabola(new Vector3(objectThrow_Position.position.x, objectThrow_Position.position.y, objectThrow_Position.position.z), npc.position, 5f, animation / 5f);
+                    break;
+                    // PC
+                case 3:
+                    transform.position = Parabola(new Vector3(objectThrow_Position.position.x, objectThrow_Position.position.y, objectThrow_Position.position.z), pc.position, 5f, animation / 5f);
+                    break;
+            }
         }
 
         // Function called to allow the NPC to throw the physics object
         protected virtual void ActivateTheThrow()
         {
-            if (DB_NPC_Fighter.illegalElbow == true && DB_RefereeAI.saw_Elbow == false)
+            if (DB_NPC_Fighter.illegalElbow == true && DB_RefereeAI.NPC_Saw_Elbow == false || DB_PC_Controller.illegalElbow == true && DB_RefereeAI.PC_Saw_Elbow == false)
                 canThrowObject = true;
             else
                 canThrowObject = false;
@@ -266,8 +282,11 @@ public abstract class DB_Base_Class : MonoBehaviour
                 if(AttackTimer <= 0)
                 {
                     AttackTimer = time_between_throws;
-                    object_To_Throw.gameObject.AddComponent<Rigidbody>();
-                    Instantiate(object_To_Throw, objectThrow_Position.position, Quaternion.identity);
+                    rig = object_To_Throw.gameObject.AddComponent<Rigidbody>();
+                    rig = object_To_Throw.GetComponent<Rigidbody>();
+                    rig.useGravity = false;
+                    rig.isKinematic = true;
+                    GameObject clone = Instantiate(object_To_Throw, objectThrow_Position.position, Quaternion.identity) as GameObject;
                 }
             }
             else if(!canThrowObject)
@@ -280,29 +299,6 @@ public abstract class DB_Base_Class : MonoBehaviour
         // If the object hits stun the fighter or ref
         // Use add force to throw an object at them from where the camera is facing
     }
-
-    // Add this if time is relevant
-    #region Upgrade Character Class
-    [SerializeField]
-    public class Upgarde_PC_stamina : MonoBehaviour
-    {
-        #region Upgrade Variable
-
-        #endregion
-
-        #region Shop System
-
-        #endregion
-
-        #region Upgarde Stamina Vlaue
-
-        #endregion
-
-        #region Upgarde Health Value
-
-        #endregion
-    }
-    #endregion
 
     #region Start Function
     // Start is called before the first frame update

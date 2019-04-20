@@ -11,6 +11,8 @@ TagManager:
   - PC_Hand
   - PC_RHand
   - NPC_RHand
+  - ThrowPos
+  - Referee
   layers:
   - Default
   - TransparentFX

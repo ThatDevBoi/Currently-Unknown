@@ -414,7 +414,7 @@ MonoBehaviour:
   - {fileID: 1357751883}
   - {fileID: 1678171502}
   - {fileID: 2059890423}
-  offset: {x: 5.5, y: 1.75, z: 2.19}
+  offset: {x: 6.41, y: 1.75, z: 2.19}
   smoothTime: 0.5
   minZoom: 60
   maxZoom: 30
@@ -616,7 +616,7 @@ GameObject:
   - component: {fileID: 542209111}
   m_Layer: 0
   m_Name: Crowed Thrower
-  m_TagString: Untagged
+  m_TagString: ThrowPos
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -689,8 +689,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -9.986048, y: 0.7772161, z: 9.986048}
   m_LocalScale: {x: 1.4131199, y: 1.4131199, z: 1.4131199}
-  m_Children:
-  - {fileID: 554263223}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -708,11 +707,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   object_To_Throw: {fileID: 5261439720577434221, guid: e3efedec7eebad54580aff32aef741e8,
     type: 3}
-  objectThrow_Position: {fileID: 0}
+  objectThrow_Position: {fileID: 542209110}
   AttackTimer: 0
   time_between_throws: 3
   canThrowObject: 0
   animation: 0
+  pc: {fileID: 1357751883}
+  npc: {fileID: 1678171502}
+  Ref: {fileID: 2059890423}
+  rig: {fileID: 0}
+  target: 0
 --- !u!1 &542295223
 GameObject:
   m_ObjectHideFlags: 0
@@ -804,36 +808,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 542295223}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &554263222
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 554263223}
-  m_Layer: 0
-  m_Name: ThrowPosition
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &554263223
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 554263222}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.487, y: 0.476, z: -0.521}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 542209110}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &570214310
 GameObject:
   m_ObjectHideFlags: 0
@@ -3367,7 +3341,7 @@ GameObject:
   - component: {fileID: 2059890424}
   m_Layer: 0
   m_Name: 'Referee '
-  m_TagString: Untagged
+  m_TagString: Referee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

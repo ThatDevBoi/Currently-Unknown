@@ -6,7 +6,8 @@ public class DB_PC_Controller : DB_Base_Class
 {
     // Hand colliders monitor
     public float turnOff_colliders = 1f;
-
+    public static bool imDead = false;
+    public static bool illegalElbow = false;
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -18,13 +19,16 @@ public class DB_PC_Controller : DB_Base_Class
 
     private void FixedUpdate()
     {
-        if(DB_RefereeAI.saw_Elbow == false)
+        Debug.Log(illegalElbow);
+        if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)
         {
             Movement();
         }
-
-        Melee_Combat();
+        if (imDead == false)
+            Melee_Combat();
+        
         Regenerate_Stamina();
+        KnockedOut();
         base.Stamina_Montior();
         // For now this will work
         // This timer will be a monitor for our players hand colliders
@@ -47,12 +51,13 @@ public class DB_PC_Controller : DB_Base_Class
             elbow_SC.enabled = false;
         }
 
-        if(Input.GetButton("Fire2"))
+        if (Input.GetButton("Fire2"))
         {
             turnOff_colliders = 1;
             elbow_SC.enabled = true;
             leftHand_SC.enabled = false;
             rightHand_SC.enabled = false;
+            illegalElbow = true;
         }
 
         if (Input.GetButton("Jump"))
@@ -62,6 +67,17 @@ public class DB_PC_Controller : DB_Base_Class
             rightHand_SC.enabled = false;
             elbow_SC.enabled = false;
         }
+    }
+
+    public void KnockedOut()
+    {
+        if (coreHealth <= 0)
+        {
+            imDead = true;
+            anim.SetBool("Knocked Out", true);
+        }
+        else
+            anim.SetBool("Knocked Out", false);
     }
 
     protected override void Movement()
