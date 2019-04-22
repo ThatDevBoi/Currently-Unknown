@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class DB_PC_Controller : DB_Base_Class
 {
     // Hand colliders monitor
     public float turnOff_colliders = 1f;
     public static bool imDead = false;
     public static bool illegalElbow = false;
+    // UI
+    public Slider pcHealth, pcStamina;
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -15,6 +17,9 @@ public class DB_PC_Controller : DB_Base_Class
         // Just turn off colliders on start
         leftHand_SC.enabled = false;
         rightHand_SC.enabled = false;
+        pcStamina.maxValue = currentStamina;
+        pcHealth.maxValue = coreHealth;
+        pcHealth.gameObject.SetActive(false);
     }
 
     private void FixedUpdate()
@@ -24,9 +29,21 @@ public class DB_PC_Controller : DB_Base_Class
         {
             Movement();
         }
+
+        // if the pc isnt dead then he can fight
         if (imDead == false)
             Melee_Combat();
-        
+        // Set the stamina and health values to there slider health bars
+        pcStamina.value = currentStamina;
+        pcHealth.value = coreHealth;
+        // when there is no stamina 
+        if (currentStamina <= 0)
+        {
+            pcHealth.gameObject.SetActive(true); // we need the players real health to turn on
+        }
+        else if (currentStamina > 0)    // however if the stamina has some value that is over 0
+            pcHealth.gameObject.SetActive(false);   // Turn the real health back off
+        // Functions to be called
         Regenerate_Stamina();
         KnockedOut();
         base.Stamina_Montior();

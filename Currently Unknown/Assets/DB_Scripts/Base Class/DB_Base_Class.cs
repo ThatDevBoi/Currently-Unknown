@@ -76,6 +76,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     [SerializeField]
     protected int coreHealth;
     // This value will be passed onto the currentStamina value
+    [SerializeField]
     protected int maxStamina = 200;
     [SerializeField]
     protected int maxCore_Health = 500;

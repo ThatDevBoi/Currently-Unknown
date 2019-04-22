@@ -4,45 +4,63 @@ using UnityEngine;
 
 public class DB_NPC_Fighter : DB_Base_Class
 {
-    // Value that subtracts from the players stamina 
-    //public int damageToGive = 5;
-    public Transform opponent;
+    // Find the player
+    // Need is so this gameObject knows where its going 
+    private Transform opponent;
+    // We set a value to allow the gameObject to stop so its not always pushing the player back
     public float Stopping_Distance;
-    public bool beenHit = false;
+    // Boolean that triggers when the gameObject it hit. 
+    // Used for when hit gameObject cannot move
+    private bool beenHit = false;
+    // This value will tick down so the beenHit boolean can tick back to false 
+    // Its just a timer to say how long this gamneObject is dazed 
     public float coolDown_fromhit = 1f;
+    // Boolean which tells the gameObject they can hit the PC when in range
     private bool close_to_hit = false;
     // A boolean that allows the AI referee to start checking for illegal moves
     public static bool illegalElbow = false;
+    // Timer which tells the NPC we can attack again when at 0
     public float time_Between_Attacks;
+    // This is what the value will be between attacks
     public float attacktimer = 1.5f;
     public float time_for_elbow;
     public int canElbow = 0;
     // stats variables
-    public int fighterType;
+    // Value which will be set when the game starts and a function is called
+    // It chooses the type of fighter
+    private int fighterType;
+    // List of materials that change the gameObjects colour depending when the fighter changes
     public Material[] visualMaterials;
+    // The GameObject which changes colour. GameObject which has the skinned mesh renderer component
     public GameObject bodymat;
+
+    // Reset fighter been knocked out variables 
+    public bool knockedOut = false;
 
     // Start is called before the first frame update
     protected override void Start()
     {
         // Find the player 
         opponent = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
+        // Lets decide what fighter the player goes against
+        // Run this before base. If not the new values never get registered as base start tells max to be a value we want to change
+        TypeOfFighter();
         base.Start();
         // Turn off colliders attached to hands
         leftHand_SC.enabled = false;
         rightHand_SC.enabled = false;
-        // Lets decide what fighter the player goes against
-        TypeOfFighter();
     }
 
     // Update is called once per frame
     void Update()
     {
-        base.Stamina_Montior();
-        // NPC Dead
-        // We have this so there is a continue state 
         if (coreHealth <= 0)
-            anim.SetBool("KnockedOut", true);
+            knockedOut = true;
+
+        if (knockedOut)
+            KnockedOut();
+
+        base.Stamina_Montior();
         Debug.Log(illegalElbow);
         if(DB_RefereeAI.NPC_Saw_Elbow == false)
         {
@@ -127,6 +145,9 @@ public class DB_NPC_Fighter : DB_Base_Class
                         anim.SetBool("Elbow", false);
                         illegalElbow = false;
                     }
+                    // Reset the value 
+                    if (illegalElbow)
+                        randomAttacks = 0;
 
                     //anim.SetInteger("Attack", randomAttacks);
                     time_Between_Attacks = attacktimer;
@@ -135,6 +156,19 @@ public class DB_NPC_Fighter : DB_Base_Class
         }
         else
             return;
+    }
+
+    public IEnumerator KnockedOut()
+    {
+        // Make the animation play so the NPC is knocked out
+
+        // We need to wait a few seconds 
+
+        // We need to respawn the NPC Fighter via GM
+
+        // We need to reset boolean so its not updating all the time goes back to being dormant
+
+        yield break;    // End of logic
     }
 
     protected override void Fighter_Stamina()
@@ -257,43 +291,66 @@ public class DB_NPC_Fighter : DB_Base_Class
     }
 
     #region Choose Fighter
-    private void TypeOfFighter()
+    public void TypeOfFighter()
     {
-        fighterType = Random.Range(0, 7);
+        fighterType = Random.Range(0, 2);
         // Use cases so there will be 6 fighters with different stats (in other words different values for speed,force etc)
         // We gain all control of player stats
         switch (fighterType)
         {
             // Prototype of how random fighter states will be generated
+            // The Heavy Hitter     // Hard
             case 1:
-                print("Hello");
+                print("The Heavy Hitter");
+                speed = 2;
+                pushBack = 80;
+                pushForce = 20;
+                maxStamina = 100;
+                maxCore_Health = 500;
+                damage_Stamina = 10;
+                increase_Stamina = 20;
+                increase_Stamina_timer = 6;
                 // Change colour of fighter so there is a visual difference
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[0];
                 break;
+            // Feather weight   // Easy
             case 2:
-                print("Hello there");
+                print("Feather weight");
+                speed = 4;
+                pushBack = 140;
+                pushForce = 30;
+                maxStamina = 300;
+                maxCore_Health = 500;
+                damage_Stamina = 5;
+                increase_Stamina = 30;
+                increase_Stamina_timer = 8;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[1];
                 break;
+            // The Under-dog    // Meduim
             case 3:
-                print("Hello there my");
+                print("The Under-dog");
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[2];
                 break;
+            // The Urban Champion   // Meduim
             case 4:
-                print("Hello there my friend");
+                print("The Urban Champion");
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[3];
                 break;
+            // Heavy Weight Champion    // Hardest
             case 5:
-                print("Hello there my friend Joe");
+                print("The Heavy Weight Champion");
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[4];
                 break;
+            // The Charity Match
             case 6:
-                print("Yo Joe You Want Blow");
+                print("The Charity Match");
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[5];
                 break;
         }
     }
     #endregion
 
+    #region On Trigger Enter/Exit
     public void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "PC_Hand")
@@ -326,7 +383,6 @@ public class DB_NPC_Fighter : DB_Base_Class
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
         }
     }
-
     public void OnTriggerExit(Collider other)
     {
         // Reset damage stamina value to default
@@ -334,4 +390,5 @@ public class DB_NPC_Fighter : DB_Base_Class
         anim.SetBool("HeadHit", false);
         anim.SetBool("BodyHit", false);
     }
+    #endregion
 }
