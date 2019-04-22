@@ -13,6 +13,15 @@ TagManager:
   - NPC_RHand
   - ThrowPos
   - Referee
+  - PC_SliderH
+  - PC_SliderS
+  - Bottle
+  - PC_Elbow
+  - NPC_Elbow
+  - NPC_SliderS
+  - NPC_SliderH
+  - MainMenu
+  - EndScreen
   layers:
   - Default
   - TransparentFX

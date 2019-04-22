@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 48353514}
   m_Layer: 0
   m_Name: mixamorig:RightForeArm
-  m_TagString: Untagged
+  m_TagString: PC_Elbow
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -258,19 +258,20 @@ MonoBehaviour:
   head_Collider: {fileID: 0}
   body_Collider: {fileID: 0}
   playerRB: {fileID: 0}
-  anim: {fileID: 0}
   speed: 7
   maxSpeed: 8
-  moveDirection: {x: 0, y: 0, z: 0}
   pushBack: 100
   pushForce: 30
   currentStamina: 0
   coreHealth: 0
-  maxCore_Health: 500
+  maxStamina: 100
+  maxCore_Health: 100
   damage_Stamina: 5
-  increase_Stamina: 5
-  increase_Stamina_timer: 5
+  increase_Stamina: 2
+  increase_Stamina_timer: 10
   turnOff_colliders: 1
+  pcHealth: {fileID: 0}
+  pcStamina: {fileID: 0}
 --- !u!1 &225450187
 GameObject:
   m_ObjectHideFlags: 0

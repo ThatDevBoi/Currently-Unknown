@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class DB_NPC_Fighter : DB_Base_Class
 {
     // Find the player
@@ -16,7 +16,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Its just a timer to say how long this gamneObject is dazed 
     public float coolDown_fromhit = 1f;
     // Boolean which tells the gameObject they can hit the PC when in range
-    private bool close_to_hit = false;
+    public bool close_to_hit = false;
     // A boolean that allows the AI referee to start checking for illegal moves
     public static bool illegalElbow = false;
     // Timer which tells the NPC we can attack again when at 0
@@ -37,15 +37,21 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Reset fighter been knocked out variables 
     public bool knockedOut = false;
 
+    // UI
+    public Slider staminaSlider, healthSlider;
+
     // Start is called before the first frame update
     protected override void Start()
     {
         // Find the player 
         opponent = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
+        staminaSlider = GameObject.FindGameObjectWithTag("NPC_SliderS").GetComponent<Slider>();
+        healthSlider = GameObject.FindGameObjectWithTag("NPC_SliderH").GetComponent<Slider>();
         // Lets decide what fighter the player goes against
         // Run this before base. If not the new values never get registered as base start tells max to be a value we want to change
         TypeOfFighter();
         base.Start();
+        healthSlider.gameObject.SetActive(false);
         // Turn off colliders attached to hands
         leftHand_SC.enabled = false;
         rightHand_SC.enabled = false;
@@ -54,14 +60,35 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Update is called once per frame
     void Update()
     {
+        // if we have no more core health
         if (coreHealth <= 0)
-            knockedOut = true;
+            knockedOut = true;  // this gameObject is offcially knocked out onto the floor
 
-        if (knockedOut)
-            KnockedOut();
+        if (knockedOut) // If our fighter has been knocked out (Health = 0)
+        {
+            GM GMscript = GameObject.Find("GM").GetComponent<GM>(); // Find the GameManager with out local variable
+            StartCoroutine(GMscript.KnockedOut());    // Call from the GM lets get a new opponent
+        }
 
+        staminaSlider.value = currentStamina;   // current stamina value of the fighter will be shown on the stamina bar slider value
+        healthSlider.value = coreHealth;     // core health value of the fighter will be shown on the stamina bar slider value
+        if (currentStamina <= 0)
+        {
+            // Turn on the health bar we have no stamina
+            healthSlider.gameObject.SetActive(true);
+            // we have no stamina so turn that stamina bar off
+            staminaSlider.gameObject.SetActive(false);
+        }
+        else if (currentStamina > 0)
+        {
+            // Turn off Health Bar. We have some stamina
+            healthSlider.gameObject.SetActive(false);
+            // Turn on stamina bar. We need to show the stamina we have
+            staminaSlider.gameObject.SetActive(true);
+        }
+        // Call from base class    
         base.Stamina_Montior();
-        Debug.Log(illegalElbow);
+        // If the ref isnt pulling both fighters aside for an illegal move then we can move
         if(DB_RefereeAI.NPC_Saw_Elbow == false)
         {
             Movement();
@@ -82,21 +109,35 @@ public class DB_NPC_Fighter : DB_Base_Class
         //}
         #endregion
 
-        if(!close_to_hit)
+        if (!knockedOut)    // if the fighter hasnt been knocked out
         {
-            leftHand_SC.enabled = false;
-            rightHand_SC.enabled = false;
+            if (!close_to_hit)  // and if the fighter isnt close enough to hit the player
+            {
+                // Turn off colliders
+                leftHand_SC.enabled = false;
+                rightHand_SC.enabled = false;
+                elbow_SC.enabled = false;
+                // All animations for fighting are off
+                // Be weird if the NPC was swinging at air
+                anim.SetBool("Jabbing", false);
+                anim.SetBool("Body Punch", false);
+                anim.SetBool("Elbow", false);
+            }
         }
+        else return;
 
         if(DB_RefereeAI.NPC_Saw_Elbow == false)
         {
+            // When we are close enough to hit the PC
             if (close_to_hit)
             {
                 // Fighter throws standard jabs and body punches
                 CleanFighting();
                 // Stamina needs to meet a value for this to be called
-                Dirty_Fighting(); 
+                Dirty_Fighting();
             }
+            else    // If not and the booleans arent valid 
+                close_to_hit = false;   // then close to hit is false we cant call these functions
         }
         if (DB_RefereeAI.NPC_Saw_Elbow == false)
         {
@@ -156,19 +197,6 @@ public class DB_NPC_Fighter : DB_Base_Class
         }
         else
             return;
-    }
-
-    public IEnumerator KnockedOut()
-    {
-        // Make the animation play so the NPC is knocked out
-
-        // We need to wait a few seconds 
-
-        // We need to respawn the NPC Fighter via GM
-
-        // We need to reset boolean so its not updating all the time goes back to being dormant
-
-        yield break;    // End of logic
     }
 
     protected override void Fighter_Stamina()
@@ -233,67 +261,80 @@ public class DB_NPC_Fighter : DB_Base_Class
         base.Stamina_Montior();
     }
 
+    #region Movement Functions
     protected override void Movement()
     {
-        if(DB_RefereeAI.NPC_Saw_Elbow == false)
+        // Make local variable for player script
+        DB_PC_Controller playerScript = opponent.GetComponent<DB_PC_Controller>();
+        if(playerScript.imDead == false)
         {
-            // when the value is 1 or more
-            if (coolDown_fromhit <= 1)
+            if (!knockedOut)
             {
-                // When the boolean in this class is false
-                if (!beenHit)
+                if (DB_RefereeAI.NPC_Saw_Elbow == false)
                 {
-                    // when the transform of this gameObject is still grater than the stopping point value
-                    if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
+                    // when the value is 1 or more
+                    if (coolDown_fromhit <= 1)
                     {
-                        close_to_hit = false;
-                        // Let there be speed
-                        speed = 1;
-                        // Allow the moveDirection to be forward 
-                        moveDirection = (transform.position += transform.forward * speed * Time.deltaTime);
-                        // Make sure the moveDirection value isnt more than 1 
-                        moveDirection = moveDirection.normalized * speed;
-                        // zero out the gravity we dont need it
-                        moveDirection.y = moveDirection.y + Physics.gravity.y;
-                        // Move that GameObject towards its target using the moveDirection
-                        playerRB.velocity = moveDirection;
+                        // When the boolean in this class is false
+                        if (!beenHit)
+                        {
+                            // when the transform of this gameObject is still grater than the stopping point value
+                            if (Vector3.Distance(transform.position, opponent.position) > Stopping_Distance)
+                            {
+                                close_to_hit = false;
+                                // Let there be speed
+                                speed = 1;
+                                // Allow the moveDirection to be forward 
+                                moveDirection = (transform.position += transform.forward * speed * Time.deltaTime);
+                                anim.SetFloat("Speed", speed);
+                                // Make sure the moveDirection value isnt more than 1 
+                                moveDirection = moveDirection.normalized * speed;
+                                // zero out the gravity we dont need it
+                                moveDirection.y = moveDirection.y + Physics.gravity.y;
+                                // Move that GameObject towards its target using the moveDirection
+                                playerRB.velocity = moveDirection;
+                            }
+                            else if (Vector3.Distance(transform.position, opponent.position) < Stopping_Distance)
+                            {
+                                // Pick a number between 1 and 3
+                                close_to_hit = true;
+                                //anim.SetBool("Jabbing", true);
+                            }
+                        }
+                        // when the boolean strikes true
+                        else if (beenHit)
+                        {
+                            // Start the cooldown timer
+                            coolDown_fromhit -= Time.deltaTime;
+                            // when the cooldown is greater or is 0
+                            if (coolDown_fromhit <= 0)
+                            {
+                                //anim.SetBool("Jabbing", false);
+                                // revert boolean back to orginal state
+                                beenHit = false;
+                                // reset the value of cooldown
+                                coolDown_fromhit = 1;
+                            }
+                            // turn off that speed
+                            speed = 0;
+                        }
                     }
-                    else if (Vector3.Distance(transform.position, opponent.position) < Stopping_Distance)
-                    {
-                        // Pick a number between 1 and 3
-                        close_to_hit = true;
-                        //anim.SetBool("Jabbing", true);
-                    }
-                }
-                // when the boolean strikes true
-                else if (beenHit)
-                {
-                    // Start the cooldown timer
-                    coolDown_fromhit -= Time.deltaTime;
-                    // when the cooldown is greater or is 0
-                    if (coolDown_fromhit <= 0)
-                    {
-                        //anim.SetBool("Jabbing", false);
-                        // revert boolean back to orginal state
-                        beenHit = false;
-                        // reset the value of cooldown
-                        coolDown_fromhit = 1;
-                    }
-                    // turn off that speed
-                    speed = 0;
+                    // Make sure the AI moves with the opponets X values
+                    transform.position = new Vector3(opponent.position.x, transform.position.y, transform.position.z);
+                    // Adding some of the physics from the base into the AI
+                    base.Movement();
                 }
             }
-            // Make sure the AI moves with the opponets X values
-            transform.position = new Vector3(opponent.position.x, transform.position.y, transform.position.z);
-            // Adding some of the physics from the base into the AI
-            base.Movement();
         }
+       
     }
+    #endregion
 
     #region Choose Fighter
     public void TypeOfFighter()
     {
-        fighterType = Random.Range(0, 2);
+        fighterType = Random.Range(1, 7);
+        Debug.Log(fighterType);
         // Use cases so there will be 6 fighters with different stats (in other words different values for speed,force etc)
         // We gain all control of player stats
         switch (fighterType)
@@ -301,49 +342,100 @@ public class DB_NPC_Fighter : DB_Base_Class
             // Prototype of how random fighter states will be generated
             // The Heavy Hitter     // Hard
             case 1:
-                print("The Heavy Hitter");
+                gameObject.name = "The Heavy Hitter";
+                knockedOut = false;
                 speed = 2;
-                pushBack = 80;
+                pushBack = 100;
                 pushForce = 20;
                 maxStamina = 100;
+                currentStamina = maxStamina;
+                staminaSlider.maxValue = currentStamina;
+                staminaSlider.value = currentStamina;
                 maxCore_Health = 500;
+                coreHealth = maxCore_Health;
+                healthSlider.maxValue = coreHealth;
+                healthSlider.value = coreHealth;
                 damage_Stamina = 10;
-                increase_Stamina = 20;
+                increase_Stamina = 2;
                 increase_Stamina_timer = 6;
+                attacktimer = 5;
                 // Change colour of fighter so there is a visual difference
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[0];
                 break;
             // Feather weight   // Easy
             case 2:
-                print("Feather weight");
+                gameObject.name = "The Feather weight";
+                knockedOut = false;
                 speed = 4;
                 pushBack = 140;
                 pushForce = 30;
                 maxStamina = 300;
+                currentStamina = maxStamina;
+                staminaSlider.maxValue = currentStamina;
+                staminaSlider.value = currentStamina;
                 maxCore_Health = 500;
+                coreHealth = maxCore_Health;
+                healthSlider.maxValue = coreHealth;
+                healthSlider.value = coreHealth;
                 damage_Stamina = 5;
-                increase_Stamina = 30;
-                increase_Stamina_timer = 8;
+                increase_Stamina = 20;
+                increase_Stamina_timer = 20;
+                attacktimer = 4;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[1];
                 break;
             // The Under-dog    // Meduim
             case 3:
-                print("The Under-dog");
+                gameObject.name = "The Under-dog";
+                knockedOut = false;
+                maxStamina = 400;
+                currentStamina = maxStamina;
+                staminaSlider.maxValue = currentStamina;
+                staminaSlider.value = currentStamina;
+                maxCore_Health = 200;
+                coreHealth = maxCore_Health;
+                healthSlider.maxValue = coreHealth;
+                healthSlider.value = coreHealth;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[2];
                 break;
             // The Urban Champion   // Meduim
             case 4:
-                print("The Urban Champion");
+                gameObject.name = "The Urban Champion";
+                knockedOut = false;
+                maxStamina = 400;
+                currentStamina = maxStamina;
+                staminaSlider.maxValue = currentStamina;
+                staminaSlider.value = currentStamina;
+                maxCore_Health = 200;
+                coreHealth = maxCore_Health;
+                healthSlider.maxValue = coreHealth;
+                healthSlider.value = coreHealth;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[3];
                 break;
             // Heavy Weight Champion    // Hardest
             case 5:
-                print("The Heavy Weight Champion");
+                gameObject.name = "The Heavy Weight Champion";
+                knockedOut = false;
+                speed = 4;
+                pushBack = 140;
+                pushForce = 30;
+                maxStamina = 400;
+                currentStamina = maxStamina;
+                staminaSlider.maxValue = currentStamina;
+                staminaSlider.value = currentStamina;
+                maxCore_Health = 100;
+                coreHealth = maxCore_Health;
+                healthSlider.maxValue = coreHealth;
+                healthSlider.value = coreHealth;
+                damage_Stamina = 5;
+                increase_Stamina = 10;
+                increase_Stamina_timer = 12;
+                attacktimer = 1;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[4];
                 break;
             // The Charity Match
             case 6:
-                print("The Charity Match");
+                gameObject.name = "The Charity Match";
+                knockedOut = false;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[5];
                 break;
         }
@@ -355,6 +447,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     {
         if (other.gameObject.tag == "PC_Hand")
         {
+            damage_Stamina = 5;
             Fighter_Stamina();
             beenHit = true;
             #region Removed
@@ -373,12 +466,18 @@ public class DB_NPC_Fighter : DB_Base_Class
             damage_Stamina = 10;
             Fighter_Stamina();
             beenHit = true;
-            #region Removed
-            // Removed for it didnt work the way i would have wanted it to
-            //Vector3 pushDirection = other.transform.position - transform.position;
-            //pushDirection = -pushDirection.normalized;
-            #endregion
             anim.SetBool("BodyHit", true);
+            // Could increase this value later?
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
+        }
+
+        if(other.gameObject.tag == "PC_Elbow")
+        {
+            // Change damage value for body punch
+            damage_Stamina = 20;
+            Fighter_Stamina();
+            beenHit = true;
+            anim.SetBool("HeadHit", true);
             // Could increase this value later?
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
         }

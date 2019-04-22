@@ -30,24 +30,16 @@ public abstract class DB_Base_Class : MonoBehaviour
 {
     #region Player and NPC variables
     #region Physics
-    [SerializeField]
     protected SphereCollider rightHand_SC;
-    [SerializeField]
     protected SphereCollider leftHand_SC;
-    [SerializeField]
     protected SphereCollider elbow_SC;
-    [SerializeField]
     protected CapsuleCollider body_CapsuleCollider;
-    [SerializeField]
     protected SphereCollider head_Collider;
-    [SerializeField]
     protected BoxCollider body_Collider;
-    [SerializeField]
     protected Rigidbody playerRB;
     #endregion
 
     #region Movement
-    [SerializeField]    // Remove
     protected Animator anim;
     [SerializeField]
     protected float speed = 5;
@@ -57,7 +49,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     // This is needed mainly for the animations which will be done in ther derived classes
     protected float Vertical;
     protected float Horizontal;
-    [SerializeField]
     protected Vector3 moveDirection = Vector3.zero;
     #endregion
 
@@ -95,15 +86,14 @@ public abstract class DB_Base_Class : MonoBehaviour
     {
         #region Camera Variables 
         public List<Transform> targets; // List of transforms that the Camera can reference from
-        public Vector3 offset;  // Vector3 used to let the camera know where its going to be angled
+        public Vector3 offset = new Vector3(6.41f, 1.75f, 2.19f);  // Vector3 used to let the camera know where its going to be angled
         public float smoothTime = .5f;  // a float value that lets the position of the camera move slowly acorss to whatever direction it needs to go to
 
-        public float minZoom = 40f;  // the start zoom the camera references from when Objects are far apart
-        public float maxZoom = 10f; // Max value the camera can zoom into the Transforms being reference
-        public float zoomLimiter = 50f; // The cap limit for the zoom 
+        public float minZoom = 60;  // the start zoom the camera references from when Objects are far apart
+        public float maxZoom = 30; // Max value the camera can zoom into the Transforms being reference
+        public float zoomLimiter = 5; // The cap limit for the zoom 
 
         protected Camera cam;   // The camera we are using 
-
         private Vector3 velocity;   
         #endregion
 
@@ -192,7 +182,6 @@ public abstract class DB_Base_Class : MonoBehaviour
         protected Vector3 vec_playerFighter;    // Player fighter GameObject Vector3 which will be monitored via its position in the world
         [SerializeField]
         protected Vector3 vec_NPCFighter;   // NPC fighter GameObject Vector3 reference that will be monitored via its position in the world
-        [SerializeField]
         protected Vector3 centerPoint;  // This Vector3 Reference tells the referee GameObject in the scene where to be depending on the PC and NPC position
         // There needs to be a Vector which allows the Referee to move between the 2 fighters when an offender does a illegal move
         #endregion
@@ -212,9 +201,10 @@ public abstract class DB_Base_Class : MonoBehaviour
     }
     #endregion
 
+    #region Crowed Member
     public class AI_Crowed : MonoBehaviour
     {
-        // Variables 
+        #region Variables
         [SerializeField]
         protected GameObject object_To_Throw;
         [SerializeField]
@@ -227,6 +217,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         public bool canThrowObject;
         [SerializeField]
         protected float animation;
+        #endregion
 
         protected virtual Vector3 Parabola(Vector3 start, Vector3 end, float height, float t)
         {
@@ -234,15 +225,16 @@ public abstract class DB_Base_Class : MonoBehaviour
             var mid = Vector3.Lerp(start, end, t);
             return new Vector3(mid.x, f(t) + Mathf.Lerp(start.y, end.y, t), mid.z);
         }
+        #region Choosing a target Variable
         public Transform pc;
         public Transform npc;
         public Transform Ref;
         public Rigidbody rig;
         public int target;
+        #endregion
         // Logic for the GameObject that will be thrown from the crowed
         protected virtual void PhysicsObject()
         {
-            Debug.Log(target);
             //increase value
             animation += Time.deltaTime;
             // Animation lasts for 5 seconds
@@ -252,7 +244,7 @@ public abstract class DB_Base_Class : MonoBehaviour
             {
                 // Ref
                 case 1:
-                    // The position of the Physics object will be the maths of the Parabola class and void
+                    // The position of the Physics object will be the maths of the Parabola Vector3
                     transform.position = Parabola(new Vector3(objectThrow_Position.position.x, objectThrow_Position.position.y, objectThrow_Position.position.z), Ref.position, 5f, animation / 5f);
                     break;
                     // NPC
@@ -266,40 +258,38 @@ public abstract class DB_Base_Class : MonoBehaviour
             }
         }
 
-        // Function called to allow the NPC to throw the physics object
+        // Function called to allow the NPC to throw a object
         protected virtual void ActivateTheThrow()
         {
+            // Check through the PC and NPC classes and see if static bools have been changed 
             if (DB_NPC_Fighter.illegalElbow == true && DB_RefereeAI.NPC_Saw_Elbow == false || DB_PC_Controller.illegalElbow == true && DB_RefereeAI.PC_Saw_Elbow == false)
-                canThrowObject = true;
-            else
-                canThrowObject = false;
+                canThrowObject = true;  // If they have been changed then we tick our boolean here to true We tick it true so we can start a reaction
+            else    // However if its not true 
+                canThrowObject = false; // We make it known its not true and we keep it that way until a later update
 
-            if (!canThrowObject)
+            if (!canThrowObject)    // When can throw is false we keep checking the static bools until it ticks true
                 return;
 
-            if(canThrowObject)
+            if(canThrowObject)// When the boolean is true and the NPC is ready to throw an object
             {
-                AttackTimer -= Time.deltaTime;
-                if(AttackTimer <= 0)
+                AttackTimer -= Time.deltaTime;  // We count down a timer 
+                if(AttackTimer <= 0)    // When that timer hits 0
                 {
-                    AttackTimer = time_between_throws;
-                    rig = object_To_Throw.gameObject.AddComponent<Rigidbody>();
-                    rig = object_To_Throw.GetComponent<Rigidbody>();
-                    rig.useGravity = false;
-                    rig.isKinematic = true;
-                    GameObject clone = Instantiate(object_To_Throw, objectThrow_Position.position, Quaternion.identity) as GameObject;
+                    AttackTimer = time_between_throws;  // We reset the timer
+                    rig = object_To_Throw.gameObject.AddComponent<Rigidbody>(); // We add a rigidbody to out throwing object
+                    rig = object_To_Throw.GetComponent<Rigidbody>();    // We find the component we just made
+                    rig.useGravity = false; // We turn off the gravity so it doesnt fall constantly with physics
+                    rig.isKinematic = true; // We dont want Physcis so we make it kinematic
+                    GameObject clone = Instantiate(object_To_Throw, objectThrow_Position.position, Quaternion.identity) as GameObject;  // We spawn the Object 
                 }
             }
-            else if(!canThrowObject)
+            else if(!canThrowObject)    // However if the boolean is false
             {
-                AttackTimer = time_between_throws;
+                AttackTimer = time_between_throws;  // Prepare the timer
             }
         }
-        // When a Fighter does an illegal move
-        // Decide a random object PC, Ref or NPC, Ref and throw an object at them
-        // If the object hits stun the fighter or ref
-        // Use add force to throw an object at them from where the camera is facing
     }
+    #endregion
 
     #region Start Function
     // Start is called before the first frame update
@@ -393,18 +383,22 @@ public abstract class DB_Base_Class : MonoBehaviour
         // This is used to set if statements to find any bugs that could occure
         // during later development
         // Like not finding a reference or making sure a value is set to thr right amount
-        #region Debugging errors
+        #region Debugging Checks
         // if the animator reference in this script or passed onto any derived class is not found
         if (anim == null)
         {
             // Write a message in the console to notify any developer what the issue is
             Debug.LogWarning("There is no animator applies to this GameObject. There needs to be one attached through the IDE. Remeber to find the component in this script");
         }
-        // if our current stamina value is less than 200 on start
-        if(currentStamina < 200f || currentStamina > 200f)
+        // Rigibdoy Not Attached Warning
+        if(playerRB == null)
         {
-            // write this message in the console. that the start stamina is not correct. However maybe they want to change the value when testing
-            Debug.LogWarning("The current stamina value you've started with is not right. it needs to be 200. However if you need to change the start stamina value, then change the if logic so it meets your needs");
+            Debug.LogError("The Rigidbody is not attached. Without it you cant move attach it via the base class on start or in the IDE");
+        }
+        // Collider error not attached
+        if(rightHand_SC == null | leftHand_SC == null | body_CapsuleCollider == null | elbow_SC == null | head_Collider == null | body_Collider == null)
+        {
+            Debug.LogError("A Collider is missing from the references in base class");
         }
         #endregion
     }

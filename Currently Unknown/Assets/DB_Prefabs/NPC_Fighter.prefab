@@ -638,34 +638,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e235623ffa88e3e48a639dbd54f42080, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rightHand_SC: {fileID: 0}
-  leftHand_SC: {fileID: 0}
-  elbow_SC: {fileID: 0}
-  body_CapsuleCollider: {fileID: 0}
-  head_Collider: {fileID: 0}
-  body_Collider: {fileID: 0}
-  playerRB: {fileID: 0}
-  anim: {fileID: 0}
   speed: 1
   maxSpeed: 3
-  moveDirection: {x: 0, y: 0, z: 0}
   pushBack: 100
   pushForce: 30
-  currentStamina: 100
+  currentStamina: 0
   coreHealth: 0
-  maxCore_Health: 500
   damage_Stamina: 5
   increase_Stamina: 5
   increase_Stamina_timer: 5
-  opponent: {fileID: 0}
   Stopping_Distance: 0.9
-  beenHit: 0
   coolDown_fromhit: 1
   time_Between_Attacks: 0
   attacktimer: 2
   time_for_elbow: 0
   canElbow: 0
-  fighterType: 0
   visualMaterials:
   - {fileID: 2100000, guid: 9b96476a9a595134992a6a8145ffae6a, type: 2}
   - {fileID: 2100000, guid: f9a2df1658b397c4abac8c0d6a62005d, type: 2}
@@ -674,6 +661,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: d3a41cfb1fa193e4ab5826375b513d22, type: 2}
   - {fileID: 2100000, guid: 02b7d7a39f8606a41b77240c3478e105, type: 2}
   bodymat: {fileID: 194018069}
+  knockedOut: 0
 --- !u!1 &472577758
 GameObject:
   m_ObjectHideFlags: 0
@@ -1467,7 +1455,7 @@ GameObject:
   - component: {fileID: 1143429795}
   m_Layer: 0
   m_Name: mixamorig:LeftForeArm
-  m_TagString: Untagged
+  m_TagString: NPC_Elbow
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

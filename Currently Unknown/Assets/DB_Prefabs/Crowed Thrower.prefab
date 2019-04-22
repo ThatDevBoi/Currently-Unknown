@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5261439720577434221
+--- !u!1 &4567905055984251179
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,48 +8,47 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5261439720577434209}
-  - component: {fileID: 5261439720577434208}
-  - component: {fileID: 5261439720577434211}
-  - component: {fileID: 5261439720577434210}
-  - component: {fileID: 1557187569139176443}
-  - component: {fileID: 54071069389272170}
+  - component: {fileID: 4567905055984251183}
+  - component: {fileID: 4567905055984251180}
+  - component: {fileID: 4567905055984251181}
+  - component: {fileID: 4567905055984251178}
+  - component: {fileID: 4567905055984251182}
   m_Layer: 0
-  m_Name: Object To Throw
-  m_TagString: Bottle
+  m_Name: Crowed Thrower
+  m_TagString: ThrowPos
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5261439720577434209
+--- !u!4 &4567905055984251183
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5261439720577434221}
+  m_GameObject: {fileID: 4567905055984251179}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.11, y: 2.7388325, z: 7.5488405}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_LocalPosition: {x: -9.986048, y: 0.7772161, z: 9.986048}
+  m_LocalScale: {x: 1.4131199, y: 1.4131199, z: 1.4131199}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &5261439720577434208
+--- !u!33 &4567905055984251180
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5261439720577434221}
+  m_GameObject: {fileID: 4567905055984251179}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &5261439720577434211
+--- !u!23 &4567905055984251181
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5261439720577434221}
+  m_GameObject: {fileID: 4567905055984251179}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -60,7 +59,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a19be6fb10f869c43ada580731748671, type: 2}
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -80,35 +79,36 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &5261439720577434210
+--- !u!65 &4567905055984251178
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5261439720577434221}
+  m_GameObject: {fileID: 4567905055984251179}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1557187569139176443
+--- !u!114 &4567905055984251182
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5261439720577434221}
+  m_GameObject: {fileID: 4567905055984251179}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54be88a4b108c384d8e9632cba32a0c9, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d7dc6431477de141b084d88335066b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  object_To_Throw: {fileID: 0}
-  objectThrow_Position: {fileID: 0}
+  object_To_Throw: {fileID: 5261439720577434221, guid: e3efedec7eebad54580aff32aef741e8,
+    type: 3}
+  objectThrow_Position: {fileID: 4567905055984251183}
   AttackTimer: 0
-  time_between_throws: 6
+  time_between_throws: 3
   canThrowObject: 0
   animation: 0
   pc: {fileID: 0}
@@ -116,19 +116,3 @@ MonoBehaviour:
   Ref: {fileID: 0}
   rig: {fileID: 0}
   target: 0
---- !u!54 &54071069389272170
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5261439720577434221}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0

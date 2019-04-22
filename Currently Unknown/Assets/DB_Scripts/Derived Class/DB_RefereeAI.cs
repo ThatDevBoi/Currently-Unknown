@@ -25,7 +25,7 @@ public class DB_RefereeAI : DB_Base_Class.Referee
     {
         // Find the IDE transform components
         trans_players = GameObject.Find("Player_Fighter").GetComponent<Transform>();
-        trans_npc = GameObject.Find("NPC_Fighter").GetComponent<Transform>();
+        trans_npc = GameObject.FindGameObjectWithTag("NPC_Fighter").GetComponent<Transform>();
         // Record the 2 fighters first ever position on the first frame
         // allow the Vector to be called once so we gain the players start pos and NPC
         vec_player_start = trans_players.position; 
@@ -172,4 +172,12 @@ public class DB_RefereeAI : DB_Base_Class.Referee
         }
     }
     #endregion
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.tag == "Bottle")
+        {
+            // Do Something
+        }
+    }
 }

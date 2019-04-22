@@ -6,13 +6,16 @@ public class DB_PC_Controller : DB_Base_Class
 {
     // Hand colliders monitor
     public float turnOff_colliders = 1f;
-    public static bool imDead = false;
+    public bool imDead = false;
     public static bool illegalElbow = false;
     // UI
     public Slider pcHealth, pcStamina;
     // Start is called before the first frame update
     protected override void Start()
     {
+        // Find UI Sliders For health and stamina feedback
+        pcHealth = GameObject.FindGameObjectWithTag("PC_SliderH").GetComponent<Slider>();
+        pcStamina = GameObject.FindGameObjectWithTag("PC_SliderS").GetComponent<Slider>();
         base.Start();
         // Just turn off colliders on start
         leftHand_SC.enabled = false;
@@ -24,7 +27,6 @@ public class DB_PC_Controller : DB_Base_Class
 
     private void FixedUpdate()
     {
-        Debug.Log(illegalElbow);
         if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)
         {
             Movement();
@@ -40,9 +42,14 @@ public class DB_PC_Controller : DB_Base_Class
         if (currentStamina <= 0)
         {
             pcHealth.gameObject.SetActive(true); // we need the players real health to turn on
+            pcStamina.gameObject.SetActive(false);
         }
         else if (currentStamina > 0)    // however if the stamina has some value that is over 0
+        {
             pcHealth.gameObject.SetActive(false);   // Turn the real health back off
+            pcStamina.gameObject.SetActive(true);
+        }
+            
         // Functions to be called
         Regenerate_Stamina();
         KnockedOut();
@@ -90,8 +97,11 @@ public class DB_PC_Controller : DB_Base_Class
     {
         if (coreHealth <= 0)
         {
+            GameObject currentNPC = GameObject.FindGameObjectWithTag("NPC_Fighter");
+            currentNPC.transform.position = new Vector3(0, 0, 0);
             imDead = true;
             anim.SetBool("Knocked Out", true);
+            elbow_SC = null;
         }
         else
             anim.SetBool("Knocked Out", false);
@@ -132,7 +142,6 @@ public class DB_PC_Controller : DB_Base_Class
             anim.SetBool("Head_Hit", true);
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             Fighter_Stamina();
-            Debug.Log("Im Being Called");
         }
 
         if(other.gameObject.tag == "NPC_RHand")
@@ -140,7 +149,13 @@ public class DB_PC_Controller : DB_Base_Class
             anim.SetBool("Stomach_Hit", true);
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             Fighter_Stamina();
-            Debug.Log("Im Being Called");
+        }
+
+        if(other.gameObject.tag == "NPC_Elbow")
+        {
+            anim.SetBool("Stomach_Hit", true);
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
+            Fighter_Stamina();
         }
     }
 
