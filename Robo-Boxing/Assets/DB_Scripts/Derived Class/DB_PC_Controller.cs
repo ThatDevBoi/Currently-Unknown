@@ -52,7 +52,10 @@ public class DB_PC_Controller : DB_Base_Class
             
         // Functions to be called
         Regenerate_Stamina();
-        KnockedOut();
+        if(coreHealth <= 0)
+        {
+            KnockedOut();
+        }
         base.Stamina_Montior();
         // For now this will work
         // This timer will be a monitor for our players hand colliders
@@ -99,6 +102,7 @@ public class DB_PC_Controller : DB_Base_Class
         {
             GameObject currentNPC = GameObject.FindGameObjectWithTag("NPC_Fighter");
             currentNPC.transform.position = new Vector3(0, 0, 0);
+            currentNPC.GetComponent<Animator>().SetFloat("Speed", 0);
             imDead = true;
             anim.SetBool("Knocked Out", true);
             elbow_SC = null;

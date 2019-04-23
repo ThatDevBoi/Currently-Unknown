@@ -13,6 +13,7 @@ public class GM : MonoBehaviour
     public Text roundText;
     public int currentRound;
     public int roundIncreaser = 1;
+    public GameObject LoseScreen;
     // Start is called before the first frame update
     void Awake()
     {
@@ -27,9 +28,12 @@ public class GM : MonoBehaviour
         roundText.text = "Round:" + currentRound.ToString();
         currentRound = roundIncreaser;
 
+        player = GameObject.FindGameObjectWithTag("Player");
         DB_PC_Controller PCscript = player.GetComponent<DB_PC_Controller>();
         if (PCscript.imDead == true)
+        {
             StartCoroutine(GameOver());
+        }
 
     }
 
@@ -52,7 +56,6 @@ public class GM : MonoBehaviour
 
         // UI
         //Lose Screen Turn off
-        GameObject LoseScreen = GameObject.FindGameObjectWithTag("EndScreen");
         LoseScreen.SetActive(false);
 
         //Main Menu Screen
@@ -69,12 +72,9 @@ public class GM : MonoBehaviour
 
     public IEnumerator GameOver()
     {
-        yield return new WaitForSeconds(2);
-        GameObject LoseScreen = GameObject.FindGameObjectWithTag("EndScreen");
+        yield return new WaitForSeconds(4);
         LoseScreen.SetActive(true);
         Time.timeScale = 0;
-
-        
     }
 
     public void RestartGame()

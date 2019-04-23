@@ -251,13 +251,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eb0be86cba6b2043a42cc0b1ec3732a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rightHand_SC: {fileID: 0}
-  leftHand_SC: {fileID: 0}
-  elbow_SC: {fileID: 0}
-  body_CapsuleCollider: {fileID: 0}
-  head_Collider: {fileID: 0}
-  body_Collider: {fileID: 0}
-  playerRB: {fileID: 0}
   speed: 7
   maxSpeed: 8
   pushBack: 100
@@ -270,6 +263,7 @@ MonoBehaviour:
   increase_Stamina: 2
   increase_Stamina_timer: 10
   turnOff_colliders: 1
+  imDead: 0
   pcHealth: {fileID: 0}
   pcStamina: {fileID: 0}
 --- !u!1 &225450187
