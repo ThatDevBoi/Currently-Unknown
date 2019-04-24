@@ -8,6 +8,8 @@ public class DB_PC_Controller : DB_Base_Class
     public float turnOff_colliders = 1f;
     public bool imDead = false;
     public static bool illegalElbow = false;
+    public bool stunned = false;
+    public float stunTimer = 4f;
     // UI
     public Slider pcHealth, pcStamina;
     // Start is called before the first frame update
@@ -27,72 +29,99 @@ public class DB_PC_Controller : DB_Base_Class
 
     private void FixedUpdate()
     {
-        if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)
+        if(!stunned)
         {
-            Movement();
-        }
+            if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)
+            {
+                Movement();
+            }
 
-        // if the pc isnt dead then he can fight
-        if (imDead == false)
-            Melee_Combat();
-        // Set the stamina and health values to there slider health bars
-        pcStamina.value = currentStamina;
-        pcHealth.value = coreHealth;
-        // when there is no stamina 
-        if (currentStamina <= 0)
-        {
-            pcHealth.gameObject.SetActive(true); // we need the players real health to turn on
-            pcStamina.gameObject.SetActive(false);
-        }
-        else if (currentStamina > 0)    // however if the stamina has some value that is over 0
-        {
-            pcHealth.gameObject.SetActive(false);   // Turn the real health back off
-            pcStamina.gameObject.SetActive(true);
-        }
+            // if the pc isnt dead then he can fight
+            if (!imDead && DB_RefereeAI.PC_Saw_Elbow == false)
+                Melee_Combat();
+
+
+            // Set the stamina and health values to there slider health bars
+            pcStamina.value = currentStamina;
+            pcHealth.value = coreHealth;
+            // when there is no stamina 
+            if (currentStamina <= 0)
+            {
+                pcHealth.gameObject.SetActive(true); // we need the players real health to turn on
+                pcStamina.gameObject.SetActive(false);
+            }
+            else if (currentStamina > 0)    // however if the stamina has some value that is over 0
+            {
+                pcHealth.gameObject.SetActive(false);   // Turn the real health back off
+                pcStamina.gameObject.SetActive(true);
+            }
+
+            // Functions to be called
+            Regenerate_Stamina();
+            if (coreHealth <= 0)
+            {
+                KnockedOut();
+            }
+            // Always havce a reference for the current NPC Fighter Script
+            DB_NPC_Fighter currentNPC = GameObject.FindGameObjectWithTag("NPC_Fighter").GetComponent<DB_NPC_Fighter>();
+            if(currentNPC.knockedOut == true)
+            {
+                currentStamina = maxStamina;
+                coreHealth = maxCore_Health;
+            }
             
-        // Functions to be called
-        Regenerate_Stamina();
-        if(coreHealth <= 0)
-        {
-            KnockedOut();
-        }
-        base.Stamina_Montior();
-        // For now this will work
-        // This timer will be a monitor for our players hand colliders
-        // we want it to tick down all the time because we dont want our players colliders to be punching the NPC in a none fight state
-        turnOff_colliders -= Time.deltaTime;
-        // So each time the monitor reacvhes 0 and beyond 
-        if(turnOff_colliders <= 0)
-        {
-            // Just turn off the colliders
-            leftHand_SC.enabled = false;
-            rightHand_SC.enabled = false;
-            elbow_SC.enabled = false;
-        }
+            base.Stamina_Montior();
+            // For now this will work
+            // This timer will be a monitor for our players hand colliders
+            // we want it to tick down all the time because we dont want our players colliders to be punching the NPC in a none fight state
+            turnOff_colliders -= Time.deltaTime;
+            // So each time the monitor reacvhes 0 and beyond 
+            if (turnOff_colliders <= 0)
+            {
+                // Just turn off the colliders
+                leftHand_SC.enabled = false;
+                rightHand_SC.enabled = false;
+                elbow_SC.enabled = false;
 
-        if (Input.GetButton("Fire1"))
-        {
-            turnOff_colliders = 1;
-            rightHand_SC.enabled = true;
-            leftHand_SC.enabled = false;
-            elbow_SC.enabled = false;
-        }
+                if (elbow_SC == null)
+                    return;
+                
+            }
 
-        if (Input.GetButton("Fire2"))
-        {
-            turnOff_colliders = 1;
-            elbow_SC.enabled = true;
-            leftHand_SC.enabled = false;
-            rightHand_SC.enabled = false;
-            illegalElbow = true;
-        }
+            if (Input.GetButton("Fire1"))
+            {
+                turnOff_colliders = 1;
+                rightHand_SC.enabled = true;
+                leftHand_SC.enabled = false;
+                elbow_SC.enabled = false;
+            }
 
-        if (Input.GetButton("Jump"))
+            if (Input.GetButton("Fire2"))
+            {
+                turnOff_colliders = 1;
+                elbow_SC.enabled = true;
+                leftHand_SC.enabled = false;
+                rightHand_SC.enabled = false;
+                illegalElbow = true;
+            }
+
+            if (Input.GetButton("Jump"))
+            {
+                turnOff_colliders = 1;
+                leftHand_SC.enabled = true;
+                rightHand_SC.enabled = false;
+                elbow_SC.enabled = false;
+            }
+        }
+        else if(stunned)
         {
-            turnOff_colliders = 1;
-            leftHand_SC.enabled = true;
-            rightHand_SC.enabled = false;
-            elbow_SC.enabled = false;
+            anim.SetFloat("Speed", 0);
+            stunTimer -= Time.deltaTime;
+            if(stunTimer <= 0)
+            {
+                stunned = false;
+                stunTimer = 4f;
+            }
         }
     }
 
@@ -161,6 +190,9 @@ public class DB_PC_Controller : DB_Base_Class
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             Fighter_Stamina();
         }
+
+        if (other.gameObject.tag == "Bottle")
+            stunned = true;
     }
 
     private void OnTriggerExit(Collider other)

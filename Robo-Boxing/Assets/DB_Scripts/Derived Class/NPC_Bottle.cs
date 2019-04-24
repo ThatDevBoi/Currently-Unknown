@@ -37,9 +37,7 @@ public class NPC_Bottle : DB_Base_Class.AI_Crowed
 
     private void OnTriggerEnter(Collider other)
     {
-        // Make sure the GameObject destroies (Prototype)
-        // Make fighter dazed or ref
-        // Comes back in time
+        // Destroy when hitting an object with these relevant triggers
         if(other.gameObject.tag == "Player")
         {
             Destroy(gameObject);

@@ -8,22 +8,18 @@ using UnityEngine;
 // Basic flat diagram logic
 // Things to consider firstly
 // Inspired from Urban Champion 
-// What will Player Characters AN AI share in common?
-// [Movement] <Moving could be in a boxing ring so in circles or moving straight with a street surrounding them>
-// [Fighting] <basic attacks would be punches to the head and stomach. However can also use elbow attacks when a multiplyer is full>
-// [Defending] <Holding hands up to the face or defending the body>
-// [Intensity Muliplyer] <Can be filled by taking damage or combos. More damage can mean further push back> (Inspired by smash)
-// [Picking Up Objects] <Objects can be spawned by boxes or thrown into the fighting area have durability and eventully break move to PC or NPC hand>
-// [Magical Attacks] <Can use different abilities that involve certain amount of magic> (May be changed if not relevant)
-// [Edge Restrictions] <When a Player OR AI are at the right coodinates like on the edge they can be hit down>
-
+// What will Player Characters and AI share in common?
+// [Movement] <Moving will be in a boxing ring fihting toe to toe always at eachothers throat>
+// [Fighting] <basic attacks would be punches to the head and stomach. However can also use elbow attacks which have consequences being crowed members throwing objects at fighter/ref>
+// [KnockBack] <Both Fighters will be knocked back when punched adding back and forwards action>
+// [Obeying Ref] <Both Fighters will be stopped by a referee when the time is needed for the ref to intervine>
 
 // Decision Making Before start of script https://medium.com/ironequal/unity-character-controller-vs-rigidbody-a1e243591483 <--- Rigidbody vs CC
-// Using A Character Controller would make moving more smooth
-// First Person Camera
-// No Rotation Just Moving at an Angle
-// Fighters move toe to toe    // https://www.youtube.com/watch?v=tcJBMqU_KzA <-- Example of toe to toe 
-// Helped with referee movement choice //https://answers.unity.com/questions/1179375/placing-an-object-between-2-objects.html
+// Using A Rigidbody would make be bettwe for me when knocking players back with physics
+// Camera will stay between Objects in the scene Fighters/Ref Inspired By Smash
+// No Rotation
+// Fighters move toe to toe    https://www.youtube.com/watch?v=tcJBMqU_KzA <-- Example of toe to toe 
+// Helped with referee movement choice https://answers.unity.com/questions/1179375/placing-an-object-between-2-objects.html
 #endregion
 #region Base Class
 public abstract class DB_Base_Class : MonoBehaviour
@@ -63,25 +59,25 @@ public abstract class DB_Base_Class : MonoBehaviour
     // The current amount of stamina the player or NPC has.
     // We use this to place the correct amount of stamina value each time the game is played
     [SerializeField]
-    protected int currentStamina;
+    protected int currentStamina;   // Current stamina is the energy the fighter has when being hurt and still breathing to stay sharp
     [SerializeField]
-    protected int coreHealth;
+    protected int coreHealth;   // Core health is the energy of the fighter the main healthbar that can never be healed. Like cuts or bruises that always hurt
     // This value will be passed onto the currentStamina value
     [SerializeField]
     protected int maxStamina = 200;
     [SerializeField]
     protected int maxCore_Health = 500;
     [SerializeField]
-    protected int damage_Stamina = 5;
+    protected int damage_Stamina = 5;   // This is the value that will damage our fighters health and stamina
     [SerializeField]
-    protected int increase_Stamina = 5;
+    protected int increase_Stamina = 5; // The value that allows fighters to regenerate stamina overtime 
     [SerializeField]
-    protected float increase_Stamina_timer = 5f;
+    protected float increase_Stamina_timer = 5f;    // How long it takes to have some stamina put back in to the currentStamina value
     #endregion
     #endregion
 
     #region Camera Movement Class
-    [SerializeField]
+    //[SerializeField]
     public class Camera_Movement : MonoBehaviour
     {
         #region Camera Variables 
@@ -290,6 +286,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         }
     }
     #endregion
+    private GameObject gameManager;
 
     #region Start Function
     // Start is called before the first frame update
@@ -331,7 +328,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         #region Body Box Collider SetUp
         body_Collider = gameObject.transform.FindChild("mixamorig:Hips").gameObject.AddComponent<BoxCollider>();
         body_Collider.center = new Vector3(0, 0, 0);
-        body_Collider.size = new Vector3(0.48f, 0.28f, 0.37f);
+        body_Collider.size = new Vector3(0.48f, 0.28f, .45f);
         #endregion
         // This is the set up for the Rigidbody (our physics) which we apply and edit to our needs
         #region Rigidbody Setup
@@ -401,6 +398,33 @@ public abstract class DB_Base_Class : MonoBehaviour
             Debug.LogError("A Collider is missing from the references in base class");
         }
         #endregion
+    }
+    #endregion
+
+    #region Update For Debugging
+    private void Update()
+    {
+        // Im only using Void Update for any debugging say objects or variable references go missing on runtime
+        // if the animator reference in this script or passed onto any derived class is not found
+        if (anim == null)
+        {
+            // Write a message in the console to notify any developer what the issue is
+            Debug.LogWarning("There is no animator applies to this GameObject. There needs to be one attached through the IDE. Remeber to find the component in this script");
+        }
+        // Rigibdoy Not Attached Warning
+        if (playerRB == null)
+        {
+            Debug.LogError("The Rigidbody is not attached. Without it you cant move attach it via the base class on start or in the IDE");
+        }
+        // Collider error not attached
+        if (rightHand_SC == null | leftHand_SC == null | body_CapsuleCollider == null | elbow_SC == null | head_Collider == null | body_Collider == null)
+        {
+            Debug.LogError("A Collider is missing from the references in base class");
+        }
+        gameManager = GameObject.Find("GM");
+        if (gameManager == null)
+            Debug.LogError("The Game Manager is not set as a reference or has gone missing, it needs to be re-applied");
+
     }
     #endregion
 
