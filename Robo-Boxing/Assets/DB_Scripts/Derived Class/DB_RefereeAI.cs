@@ -78,6 +78,15 @@ public class DB_RefereeAI : DB_Base_Class.Referee
             gameObject.transform.position = new Vector3(-3, .5f, 0);
             NPC_Saw_Elbow = false;
             PC_Saw_Elbow = false;
+            percentage = 0;
+            // reset the timer value
+            NPCresetBool = 3f;
+            NPCresetRef_Timer = 1f;
+            NPCResetRef = false;   // tick boolean back to false so ref can be back in orginal state
+
+            PCresetBool = 3f;
+            PCresetRef_Timer = 1f;
+            PCResetRef = false;
             stunTimer -= Time.deltaTime;
             if(stunTimer <= 0)
             {

@@ -31,6 +31,7 @@ public class DB_PC_Controller : DB_Base_Class
     {
         if(!stunned)
         {
+            Regenerate_Stamina();
             if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)
             {
                 Movement();
@@ -166,6 +167,27 @@ public class DB_PC_Controller : DB_Base_Class
     protected override void Fighter_Stamina()
     {
         base.Fighter_Stamina();
+    }
+
+    protected override void Regenerate_Stamina()
+    {
+        // if the stamina value of the fighter is less than 200
+        if (currentStamina < 200)
+        {
+            // reset the timer
+            increase_Stamina_timer = 5f;
+            // Increase the current stamina value
+            currentStamina += increase_Stamina;
+        }
+        // However if the current stamina is not less than the specific value
+        else
+        {
+            //Reset the timer
+            increase_Stamina_timer = 5f;
+            // Return nothing else
+            return;
+        }
+        base.Regenerate_Stamina();
     }
 
     private void OnTriggerEnter(Collider other)

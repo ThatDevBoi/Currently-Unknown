@@ -24,6 +24,8 @@ public class DB_NPC_Fighter : DB_Base_Class
     public bool imStunned = false;
     // Timer which ticks down as its the amount of time the fighter can move fight or do anything
     public float stunTimer = 4f;
+    // Holds the start value of the stamina regenerate timer
+    float regenerateTimer;
     // Timer which tells the NPC we can attack again when at 0
     public float time_Between_Attacks;
     // This is what the value will be between attacks
@@ -47,6 +49,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     protected override void Start()
     {
         // Find the player 
+        regenerateTimer = increase_Stamina_timer;
         opponent = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         staminaSlider = GameObject.FindGameObjectWithTag("NPC_SliderS").GetComponent<Slider>();
         healthSlider = GameObject.FindGameObjectWithTag("NPC_SliderH").GetComponent<Slider>();
@@ -63,37 +66,37 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Update is called once per frame
     void Update()
     {
+        if (knockedOut) // If our fighter has been knocked out (Health = 0)
+        {
+            head_Collider.enabled = false;
+            body_Collider.enabled = false;
+            GM GMscript = GameObject.Find("GM").GetComponent<GM>(); // Find the GameManager with out local variable
+            StartCoroutine(GMscript.KnockedOut());    // Call from the GM lets get a new opponent
+        }
+
+        staminaSlider.value = currentStamina;   // current stamina value of the fighter will be shown on the stamina bar slider value
+        healthSlider.value = coreHealth;     // core health value of the fighter will be shown on the stamina bar slider value
+        if (currentStamina <= 0)
+        {
+            // Turn on the health bar we have no stamina
+            healthSlider.gameObject.SetActive(true);
+            // we have no stamina so turn that stamina bar off
+            staminaSlider.gameObject.SetActive(false);
+        }
+        else if (currentStamina > 0)
+        {
+            // Turn off Health Bar. We have some stamina
+            healthSlider.gameObject.SetActive(false);
+            // Turn on stamina bar. We need to show the stamina we have
+            staminaSlider.gameObject.SetActive(true);
+        }
+
         // If the gameObject hasnt been hit with a bottle and the boolean is false
-        if(!imStunned)
+        if (!imStunned)
         {
             // if we have no more core health
             if (coreHealth <= 0)
                 knockedOut = true;  // this gameObject is offcially knocked out onto the floor
-
-            if (knockedOut) // If our fighter has been knocked out (Health = 0)
-            {
-                head_Collider.enabled = false;
-                body_Collider.enabled = false;
-                GM GMscript = GameObject.Find("GM").GetComponent<GM>(); // Find the GameManager with out local variable
-                StartCoroutine(GMscript.KnockedOut());    // Call from the GM lets get a new opponent
-            }
-
-            staminaSlider.value = currentStamina;   // current stamina value of the fighter will be shown on the stamina bar slider value
-            healthSlider.value = coreHealth;     // core health value of the fighter will be shown on the stamina bar slider value
-            if (currentStamina <= 0)
-            {
-                // Turn on the health bar we have no stamina
-                healthSlider.gameObject.SetActive(true);
-                // we have no stamina so turn that stamina bar off
-                staminaSlider.gameObject.SetActive(false);
-            }
-            else if (currentStamina > 0)
-            {
-                // Turn off Health Bar. We have some stamina
-                healthSlider.gameObject.SetActive(false);
-                // Turn on stamina bar. We need to show the stamina we have
-                staminaSlider.gameObject.SetActive(true);
-            }
             // If the ref isnt pulling both fighters aside for an illegal move then we can move
             if (DB_RefereeAI.NPC_Saw_Elbow == false)
             {
@@ -249,6 +252,10 @@ public class DB_NPC_Fighter : DB_Base_Class
     #region Base Override Functions
     protected override void Regenerate_Stamina()
     {
+        if(increase_Stamina_timer <= 0)
+        {
+            increase_Stamina_timer = regenerateTimer;
+        }
         base.Regenerate_Stamina();
     }
 
@@ -373,8 +380,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 coreHealth = maxCore_Health;
                 healthSlider.maxValue = coreHealth;
                 healthSlider.value = coreHealth;
-                increase_Stamina = 20;
-                increase_Stamina_timer = 20;
+                increase_Stamina = 6;
+                increase_Stamina_timer = 8;
                 attacktimer = 4;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[1];
                 break;
@@ -393,9 +400,9 @@ public class DB_NPC_Fighter : DB_Base_Class
                 coreHealth = maxCore_Health;
                 healthSlider.maxValue = coreHealth;
                 healthSlider.value = coreHealth;
-                increase_Stamina = 5;
+                increase_Stamina = 2;
                 increase_Stamina_timer = 6;
-                attacktimer = 2;
+                attacktimer = 1;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[2];
                 break;
             // The Urban Champion   // Very Hard
@@ -414,8 +421,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 coreHealth = maxCore_Health;
                 healthSlider.maxValue = coreHealth;
                 healthSlider.value = coreHealth;
-                increase_Stamina = 30;
-                increase_Stamina_timer = 20;
+                increase_Stamina = 50;
+                increase_Stamina_timer = 30;
                 attacktimer = 2.5f;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[3];
                 break;
@@ -434,9 +441,9 @@ public class DB_NPC_Fighter : DB_Base_Class
                 coreHealth = maxCore_Health;
                 healthSlider.maxValue = coreHealth;
                 healthSlider.value = coreHealth;
-                increase_Stamina = 10;
-                increase_Stamina_timer = 12;
-                attacktimer = 1;
+                increase_Stamina = 40;
+                increase_Stamina_timer = 25;
+                attacktimer = .5f;
                 bodymat.GetComponent<SkinnedMeshRenderer>().material = visualMaterials[4];
                 break;
             // The Charity Match    Meduim

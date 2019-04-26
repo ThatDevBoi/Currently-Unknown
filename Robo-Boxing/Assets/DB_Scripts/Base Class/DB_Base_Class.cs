@@ -605,20 +605,9 @@ public abstract class DB_Base_Class : MonoBehaviour
             // if the stamina value of the fighter is less than 200
             if (currentStamina < 200)
             {
-                // reset the timer
-                increase_Stamina_timer = 5f;
                 // Increase the current stamina value
                 currentStamina += increase_Stamina;
-            }
-            // However if the current stamina is not less than the specific value
-            else
-            {
-                //Reset the timer
-                increase_Stamina_timer = 5f;
-                    // Return nothing else
-                    return;
-            }
-                
+            }   
         }
     }
     #endregion
