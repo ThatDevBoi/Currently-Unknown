@@ -32,8 +32,7 @@ public class DB_RefereeAI : DB_Base_Class.Referee
     private float PCresetRef_Timer = 1f;
     private bool PCResetRef = false;
     public static bool PC_Saw_Elbow = false;
-
-
+    public bool FindnewNPC = false;
     #endregion
 
     // Start is called before the first frame update
@@ -51,7 +50,19 @@ public class DB_RefereeAI : DB_Base_Class.Referee
     // Update is called once per frame
     void Update()
     {
-        if(!imStunned)
+        if (trans_npc == null)  // if there is no reference
+        {
+            FindnewNPC = true;  // find the new NPC that just spawned boolean is true
+            if (FindnewNPC)     // When boolean is true
+            {
+                // Lets find that new NPC 
+                trans_npc = GameObject.FindGameObjectWithTag("NPC_Fighter").GetComponent<Transform>();
+            }
+        }
+        else   // However if the Reference is not null
+            FindnewNPC = false; // Tick boolean to false
+
+        if (!imStunned)
         {
             // Find the player fighter and hold its position in the world and store it in the Vector3
             vec_playerFighter = GameObject.FindGameObjectWithTag("Player").transform.position;

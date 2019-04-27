@@ -77,7 +77,6 @@ public abstract class DB_Base_Class : MonoBehaviour
     #endregion
 
     #region Camera Movement Class
-    //[SerializeField]
     public class Camera_Movement : MonoBehaviour
     {
         #region Camera Variables 
@@ -295,27 +294,34 @@ public abstract class DB_Base_Class : MonoBehaviour
         // These 2 regions are for placing a sphere collider on the Player or NPC hand. Which will allow for trigger/collision enters
         // We need both hands with colliders as one attack is a jab with one hand and another attack is with the opposite hand
         #region Right Hand Size
-        rightHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
+        // Find the Child which is attached to the gameObject and add a Sphere Collider
+        rightHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand").gameObject.AddComponent<SphereCollider>();
+        // Make sure the collider is a trigger
         rightHand_SC.isTrigger = true;
-        rightHand_SC.center = new Vector3(0.09f, 0, 0.01f);    // resize SphereCollider
-        rightHand_SC.radius = 0.06f; // Set Sphere collider Radius
+        // Adjust where the collider spawns (its position)
+        rightHand_SC.center = new Vector3(0.09f, 0, 0.01f);
+        rightHand_SC.radius = 0.06f; // Set Sphere collider Radius scale it to be the correct scale of the hand
         #endregion
         #region Left Hand Size
-        leftHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand").gameObject.AddComponent<SphereCollider>();// Add BoxCollider on a child object
-        leftHand_SC.isTrigger = true;
-        leftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Resize SphereCollider
-        leftHand_SC.radius = 0.07f;
+        // Find child and add sphere collider
+        leftHand_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand").gameObject.AddComponent<SphereCollider>();
+        leftHand_SC.isTrigger = true;   // Make the made collider a trigger
+        leftHand_SC.center = new Vector3(-0.07f, 0, 0.01f);    // Where will the collider be placed on the gameObject child
+        leftHand_SC.radius = 0.07f; // Scale the collider for how big it is
         #endregion
         #region Elbow SetUp
-        if(gameObject.tag == "Player")
+        if(gameObject.tag == "Player")  // If the gameObject is tagged Player
         {
+            // Add the sphere collider on the right forearm
             elbow_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm").gameObject.AddComponent<SphereCollider>();
-            elbow_SC.isTrigger = true;
-            elbow_SC.radius = 0.07f;
+            elbow_SC.isTrigger = true;  // Make the collider a trigger
+            elbow_SC.radius = 0.07f;    // Set its scale
         }
-        else
+        else    // if its not tagged PLayer so if we are dealing with the NPC
         {
+            // Add the collider to the left forearm
             elbow_SC = gameObject.transform.FindChild("mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm").gameObject.AddComponent<SphereCollider>();
+            // make it a trigger and scale it
             elbow_SC.isTrigger = true;
             elbow_SC.radius = 0.07f;
         }
@@ -330,6 +336,8 @@ public abstract class DB_Base_Class : MonoBehaviour
         body_Collider.center = new Vector3(0, 0, 0);
         body_Collider.size = new Vector3(0.48f, 0.28f, .45f);
         #endregion
+        //^^^ all these lines of code are the same thing. Scalling an added collider and making them a trigger
+
         // This is the set up for the Rigidbody (our physics) which we apply and edit to our needs
         #region Rigidbody Setup
         playerRB = gameObject.AddComponent<Rigidbody>();     // Adds Rigidbody compoenent into the IDE we need it to apply physics 
@@ -338,7 +346,7 @@ public abstract class DB_Base_Class : MonoBehaviour
         // This makes sure on start the Rigidbodys rotation turns off. We want fights to move in straight lines standing toe to toe
         // If we apply rotation then objects wont always be facing eachother
         playerRB.constraints = RigidbodyConstraints.FreezeRotation;
-        playerRB.mass = 2f;
+        playerRB.mass = 2f; // Make the mass a set variable we can edit 
         playerRB.drag = 0;
         playerRB.angularDrag = 0.05f;
         #endregion
@@ -359,8 +367,8 @@ public abstract class DB_Base_Class : MonoBehaviour
         // This region is for any components we dont apply through script
         // however want to find and store there reference
         #region Finding any IDE components
-        anim = GetComponent<Animator>();
-        anim.applyRootMotion = false;
+        anim = GetComponent<Animator>();    // Find the animator in the IDE
+        anim.applyRootMotion = false;   // Make root motion with he found animator false
         #endregion
         #region Sets values 
         // the current stamina the player has during the game always starts with the max stamina value
@@ -484,9 +492,9 @@ public abstract class DB_Base_Class : MonoBehaviour
 
         // Allows the moveDirection to access the inputs the player can press
         moveDirection = (transform.forward * Vertical + (transform.right * Horizontal)) * Time.deltaTime * speed;
-
-        //moveDirection = (transform.forward * Input.GetAxis("Vertical")) + (transform.right * Input.GetAxis("Horizontal")) * Time.deltaTime;
+        // Normalize the vector and speed so it is 1
         moveDirection = moveDirection.normalized * speed;
+        // Make sure GameObject cant go up on Y
         moveDirection.y = moveDirection.y + Physics.gravity.y;
 
         // Move the players physics compoenent Rigidbody with velocity using the Vector3 moveDirection and multiplying by speed
@@ -559,6 +567,7 @@ public abstract class DB_Base_Class : MonoBehaviour
     #endregion
     protected virtual void Stamina_Montior()
     {
+        // When the current stamina value drops below a point we change the push back value. Push back value is how far objects move back when hit
         if (currentStamina < 150)
             pushBack = 110;
 
@@ -574,14 +583,16 @@ public abstract class DB_Base_Class : MonoBehaviour
     #region Stamina Bar
     protected virtual void Fighter_Stamina()
     {
+        // if the current stamina hasnt hit 0 yet
         if(currentStamina > 0)
         {
+            // take away stamina
             currentStamina -= damage_Stamina;
             return;
         }
-        else
+        else    // if its 0
         {
-            coreHealth -= damage_Stamina;
+            coreHealth -= damage_Stamina;   // damage the core health value
         }
 
         #region Monitoring Stamina for less or more force

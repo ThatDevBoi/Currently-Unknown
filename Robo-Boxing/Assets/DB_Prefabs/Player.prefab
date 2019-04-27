@@ -315,23 +315,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eb0be86cba6b2043a42cc0b1ec3732a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rightHand_SC: {fileID: 0}
-  leftHand_SC: {fileID: 0}
-  body_CapsuleCollider: {fileID: 0}
-  head_Collider: {fileID: 0}
-  body_Collider: {fileID: 0}
-  playerRB: {fileID: 0}
-  gravity: 15
-  rbMass: 2
-  anim: {fileID: 0}
   speed: 7
   maxSpeed: 8
-  moveDirection: {x: 0, y: 0, z: 0}
-  pushForce: 30
-  fl_knockBackTime: 0.5
+  pushBack: 50
+  pushForce: 2
   currentStamina: 0
+  coreHealth: 0
   maxStamina: 200
-  NPC_target: {fileID: 0}
+  maxCore_Health: 500
+  damage_Stamina: 5
+  increase_Stamina: 5
+  increase_Stamina_timer: 5
+  turnOff_colliders: 1
+  imDead: 0
+  stunned: 0
+  stunTimer: 4
+  pcHealth: {fileID: 0}
+  pcStamina: {fileID: 0}
 --- !u!1 &481651157
 GameObject:
   m_ObjectHideFlags: 0

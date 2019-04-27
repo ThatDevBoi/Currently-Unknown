@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5261439720577434211}
   - component: {fileID: 5261439720577434210}
   - component: {fileID: 1557187569139176443}
-  - component: {fileID: 54071069389272170}
+  - component: {fileID: 54132826479293518}
   m_Layer: 0
   m_Name: Object To Throw
   m_TagString: Bottle
@@ -116,7 +116,7 @@ MonoBehaviour:
   Ref: {fileID: 0}
   rig: {fileID: 0}
   target: 0
---- !u!54 &54071069389272170
+--- !u!54 &54132826479293518
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

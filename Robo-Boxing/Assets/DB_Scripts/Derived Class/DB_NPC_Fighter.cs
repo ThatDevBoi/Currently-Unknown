@@ -25,6 +25,7 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Timer which ticks down as its the amount of time the fighter can move fight or do anything
     public float stunTimer = 4f;
     // Holds the start value of the stamina regenerate timer
+    [SerializeField]
     float regenerateTimer;
     // Timer which tells the NPC we can attack again when at 0
     public float time_Between_Attacks;
@@ -48,15 +49,15 @@ public class DB_NPC_Fighter : DB_Base_Class
     // Start is called before the first frame update
     protected override void Start()
     {
-        // Find the player 
-        regenerateTimer = increase_Stamina_timer;
         opponent = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         staminaSlider = GameObject.FindGameObjectWithTag("NPC_SliderS").GetComponent<Slider>();
         healthSlider = GameObject.FindGameObjectWithTag("NPC_SliderH").GetComponent<Slider>();
         // Lets decide what fighter the player goes against
         // Run this before base. If not the new values never get registered as base start tells max to be a value we want to change
         TypeOfFighter();
+        //Base Start
         base.Start();
+        regenerateTimer = increase_Stamina_timer;
         healthSlider.gameObject.SetActive(false);   // Turn off Healthbar we have found it so now we dont need it We need it when stamina is 0
         // Turn off colliders attached to hands
         leftHand_SC.enabled = false;
@@ -249,13 +250,15 @@ public class DB_NPC_Fighter : DB_Base_Class
         else        // If it aint under 100
             canElbow = 0;   // Turn the int value back to 0 so we only clean fight
     }
+
     #region Base Override Functions
     protected override void Regenerate_Stamina()
     {
+        // if the increase stamina timer is greater or equal to 0
         if(increase_Stamina_timer <= 0)
         {
-            increase_Stamina_timer = regenerateTimer;
-        }
+            increase_Stamina_timer = regenerateTimer;   // the base class timer for regenerating stmina now becomes the value of this classes regenerate timer 
+        } // i did this because if i didnt then the switch case statements would be invalid and would change to there on accord depending on the base function
         base.Regenerate_Stamina();
     }
 
@@ -289,14 +292,11 @@ public class DB_NPC_Fighter : DB_Base_Class
                                 // Let there be speed
                                 speed = 1;
                                 // Allow the moveDirection to be forward 
-                                moveDirection = (transform.position += transform.forward * speed * Time.deltaTime);
+                                // new movement Vector for NPC for NPC cant use input
+                                Vector3 npcmoveDirection = (transform.position += transform.forward * speed * Time.deltaTime);
+                                npcmoveDirection = moveDirection;   // local vector passes through the orginal base class vector3
+                                base.Movement();    // call the base
                                 anim.SetFloat("Speed", speed);
-                                // Make sure the moveDirection value isnt more than 1 
-                                moveDirection = moveDirection.normalized * speed;
-                                // zero out the gravity we dont need it
-                                moveDirection.y = moveDirection.y + Physics.gravity.y;
-                                // Move that GameObject towards its target using the moveDirection
-                                playerRB.velocity = moveDirection;
                             }
                             else if (Vector3.Distance(transform.position, opponent.position) < Stopping_Distance)
                             {
@@ -319,18 +319,15 @@ public class DB_NPC_Fighter : DB_Base_Class
                                 // reset the value of cooldown
                                 coolDown_fromhit = 1;
                             }
-                            // turn off that speed
+                            // turn off that speed if not NPC would be hit but wont stop
                             speed = 0;
                         }
                     }
                     // Make sure the AI moves with the opponets X values
                     transform.position = new Vector3(opponent.position.x, transform.position.y, transform.position.z);
-                    // Adding some of the physics from the base into the AI
-                    base.Movement();
                 }
             }
         }
-       
     }
     #endregion
 
@@ -349,8 +346,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 gameObject.name = "The Heavy Hitter";
                 knockedOut = false;
                 Stopping_Distance = .7f;
-                pushBack = 100;
-                pushForce = 20;
+                pushBack = 40;
+                pushForce = 5;
                 maxStamina = 100;
                 currentStamina = maxStamina;
                 staminaSlider.maxValue = currentStamina;
@@ -370,8 +367,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 gameObject.name = "The Feather weight";
                 knockedOut = false;
                 Stopping_Distance = .7f;
-                pushBack = 140;
-                pushForce = 30;
+                pushBack = 80;
+                pushForce = 2;
                 maxStamina = 250;
                 currentStamina = maxStamina;
                 staminaSlider.maxValue = currentStamina;
@@ -391,8 +388,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 knockedOut = false;
                 Stopping_Distance = .7f;
                 maxStamina = 120;
-                pushBack = 100;
-                pushForce = 20;;
+                pushBack = 30;
+                pushForce = 6;
                 currentStamina = maxStamina;
                 staminaSlider.maxValue = currentStamina;
                 staminaSlider.value = currentStamina;
@@ -411,8 +408,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 knockedOut = false;
                 Stopping_Distance = .7f;
                 maxStamina = 300;
-                pushBack = 80;
-                pushForce = 30;
+                pushBack = 40;
+                pushForce = 3;
                 maxStamina = 500;
                 currentStamina = maxStamina;
                 staminaSlider.maxValue = currentStamina;
@@ -431,8 +428,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 gameObject.name = "The Heavy Weight Champion";
                 knockedOut = false;
                 Stopping_Distance = .7f;
-                pushBack = 140;
-                pushForce = 30;
+                pushBack = 20;
+                pushForce = 5;
                 maxStamina = 400;
                 currentStamina = maxStamina;
                 staminaSlider.maxValue = currentStamina;
@@ -451,8 +448,8 @@ public class DB_NPC_Fighter : DB_Base_Class
                 gameObject.name = "The Charity Match";
                 knockedOut = false;
                 Stopping_Distance = .7f;
-                pushBack = 100;
-                pushForce = 50;
+                pushBack = 20;
+                pushForce = 10;
                 maxStamina = 100;
                 currentStamina = maxStamina;
                 staminaSlider.maxValue = currentStamina;
@@ -478,11 +475,6 @@ public class DB_NPC_Fighter : DB_Base_Class
             damage_Stamina = 5;
             Fighter_Stamina();
             beenHit = true;
-            #region Removed
-            // Removed for it didnt work the way i would have wanted it to
-            //Vector3 pushDirection = other.transform.position - transform.position;
-            //pushDirection = -pushDirection.normalized;
-            #endregion
             anim.SetBool("HeadHit", true);
             GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
             

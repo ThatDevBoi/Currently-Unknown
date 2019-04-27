@@ -17,22 +17,23 @@ public class GM : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        Time.timeScale = 0;
+        Time.timeScale = 0; // Start the game at 0 time so nothing moves 
 
-        InitiateGame();
+        InitiateGame(); // Spawn the game
     }
 
     // Update is called once per frame
     void Update()
     {
+        // the round text UI element writes Round: and showing the currentRound int value
         roundText.text = "Round:" + currentRound.ToString();
-        currentRound = roundIncreaser;
+        currentRound = roundIncreaser;  // the current Round value equals to the Round Increaser value
 
-        player = GameObject.FindGameObjectWithTag("Player");
-        DB_PC_Controller PCscript = player.GetComponent<DB_PC_Controller>();
-        if (PCscript.imDead == true)
+        player = GameObject.FindGameObjectWithTag("Player");    // Find the player
+        DB_PC_Controller PCscript = player.GetComponent<DB_PC_Controller>();    // Find the players Derived Class
+        if (PCscript.imDead == true)    // if the PC is dead
         {
-            StartCoroutine(GameOver());
+            StartCoroutine(GameOver()); // Call Gameover
         }
 
     }
@@ -46,13 +47,13 @@ public class GM : MonoBehaviour
         GameObject PC = Instantiate(player, spawnPoint, Quaternion.identity) as GameObject; // Spawn Object
         PC.name = "Player_Fighter"; // Name of GameObject when spawned
         // Referee
-        Vector3 Refspawnpoint = new Vector3(-3, 0.5f, 0);
-        GameObject Ref = Instantiate(referee, Refspawnpoint, Quaternion.identity) as GameObject;
-        Ref.name = "Referee";
+        Vector3 Refspawnpoint = new Vector3(-3, 0.5f, 0);   // Set the spawn point for start
+        GameObject Ref = Instantiate(referee, Refspawnpoint, Quaternion.identity) as GameObject;    // Spawn the prefab in the correct place and rotation
+        Ref.name = "Referee";   // Name the instance of the prefab Referee
         // Crowed
-        Vector3 CrowedspawnPoint = new Vector3(-9.986048f, 0.7f, 10);
-        GameObject crowedThrower = Instantiate(crowed, CrowedspawnPoint, Quaternion.identity) as GameObject;
-        crowedThrower.name = "Crowed Thrower";
+        Vector3 CrowedspawnPoint = new Vector3(-9.986048f, 0.7f, 10);   // Set up the start position for the Game Object that will be spawned
+        GameObject crowedThrower = Instantiate(crowed, CrowedspawnPoint, Quaternion.identity) as GameObject;    // Spawn the prefab instance
+        crowedThrower.name = "Crowed Thrower";  // Name the instance of the prefab Crowed Thrower
 
         // UI
         //Lose Screen Turn off
@@ -62,32 +63,34 @@ public class GM : MonoBehaviour
         GameObject mainMenu = GameObject.FindGameObjectWithTag("MainMenu");
         mainMenu.SetActive(true);
     }
-
+    // Used for the UI Start Button
     public void StartGame()
     {
-        Time.timeScale = 1;
+        // Time goes back to normal so that Objects can move
+        Time.timeScale = 1; 
+        // Find and turn off the Main Menu
         GameObject mainMenu = GameObject.FindGameObjectWithTag("MainMenu");
         mainMenu.SetActive(false);
     }
-
+    // Used for when player is dead
     public IEnumerator GameOver()
     {
         yield return new WaitForSeconds(4);
         LoseScreen.SetActive(true);
         Time.timeScale = 0;
     }
-
+    // Used for restart Button on end screen UI
     public void RestartGame()
     {
         Application.LoadLevel(Application.loadedLevel);
     }
-
+    // Used for all exit game buttons
     public void ExitApplication()
     {
         Application.Quit();
         Debug.Log("Game Ended");
     }
-
+    // NPC spawn this is seperate so we can use it for our knockout Coroutine
     void SpawnNPC()
     {
         // NPC
@@ -113,6 +116,7 @@ public class GM : MonoBehaviour
         DB_NPC_Fighter script = CurrentNPC.GetComponent<DB_NPC_Fighter>();
         // Turn on the Health script so when the fighter spawns the GameObject has all the relevant data to acess for its variables
         script.healthSlider.gameObject.SetActive(true);
+        script.staminaSlider.gameObject.SetActive(true);
         // Spawn the New NPC
         SpawnNPC();
         // Increase Round

@@ -29,17 +29,18 @@ public class DB_PC_Controller : DB_Base_Class
 
     private void FixedUpdate()
     {
+        // if this gameObject has not been ht with a bottle and the boolean hasnt ticked to true
         if(!stunned)
         {
-            Regenerate_Stamina();
-            if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)
+            Regenerate_Stamina();   // Call regerate stamina Function
+            if (DB_RefereeAI.NPC_Saw_Elbow == false & imDead == false)  // IF ref didnt see the illegal elbow and this GameObject has not got 0 HP
             {
-                Movement();
+                Movement(); // We can move
             }
 
             // if the pc isnt dead then he can fight
             if (!imDead && DB_RefereeAI.PC_Saw_Elbow == false)
-                Melee_Combat();
+                Melee_Combat(); // Call combat
 
 
             // Set the stamina and health values to there slider health bars
@@ -88,7 +89,7 @@ public class DB_PC_Controller : DB_Base_Class
                     return;
                 
             }
-
+            // Turn off irrelevant colliders turn on relevant 1 when we press left mouse button
             if (Input.GetButton("Fire1"))
             {
                 turnOff_colliders = 1;
@@ -96,7 +97,7 @@ public class DB_PC_Controller : DB_Base_Class
                 leftHand_SC.enabled = false;
                 elbow_SC.enabled = false;
             }
-
+            // Turn off irrelevant colliders turn on relevant 1 when we press right mouse button
             if (Input.GetButton("Fire2"))
             {
                 turnOff_colliders = 1;
@@ -105,7 +106,7 @@ public class DB_PC_Controller : DB_Base_Class
                 rightHand_SC.enabled = false;
                 illegalElbow = true;
             }
-
+            // Turn off irrelevant colliders turn on relevant 1 when we press space bar
             if (Input.GetButton("Jump"))
             {
                 turnOff_colliders = 1;
@@ -114,31 +115,38 @@ public class DB_PC_Controller : DB_Base_Class
                 elbow_SC.enabled = false;
             }
         }
-        else if(stunned)
+        else if(stunned)    // if the gameObject has been hit with a bottle and is stunned
         {
-            anim.SetFloat("Speed", 0);
-            stunTimer -= Time.deltaTime;
-            if(stunTimer <= 0)
+            anim.SetFloat("Speed", 0);      // We cant move
+            stunTimer -= Time.deltaTime;        // Start a timer 
+            if(stunTimer <= 0)          // When the timer is 0 or more
             {
-                stunned = false;
-                stunTimer = 4f;
+                stunned = false;        // we are free to move again
+                stunTimer = 4f;     // reset that timer
             }
         }
     }
 
     public void KnockedOut()
     {
+        // When health is 0 or more
         if (coreHealth <= 0)
         {
+            // Get the currentNPC fighter in the scene
             GameObject currentNPC = GameObject.FindGameObjectWithTag("NPC_Fighter");
+            // Move that NPC to the middle of the ring
             currentNPC.transform.position = new Vector3(0, 0, 0);
+            // Make sure that NPC is idle
             currentNPC.GetComponent<Animator>().SetFloat("Speed", 0);
+            // Tick the imDead boolean to true
             imDead = true;
+            // Activate im knocked out animation
             anim.SetBool("Knocked Out", true);
+            // Remove the elbow collider
             elbow_SC = null;
         }
         else
-            anim.SetBool("Knocked Out", false);
+            anim.SetBool("Knocked Out", false); // if not true and we have health then dont trigger the animation
     }
 
     protected override void Movement()
@@ -192,29 +200,30 @@ public class DB_PC_Controller : DB_Base_Class
 
     private void OnTriggerEnter(Collider other)
     {
+        // If we are hit by an object called NPC Hand
         if (other.gameObject.tag == "NPC_Hand")
         {
-            anim.SetBool("Head_Hit", true);
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
-            Fighter_Stamina();
+            anim.SetBool("Head_Hit", true); // Activate animation for head hit
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);  // Push this gameObject back
+            Fighter_Stamina();  // Take away stamina
         }
-
+        // if hit by rHand tag
         if(other.gameObject.tag == "NPC_RHand")
         {
-            anim.SetBool("Stomach_Hit", true);
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
-            Fighter_Stamina();
+            anim.SetBool("Stomach_Hit", true);  // Stomach hit animation is true
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);  // push gameObject back
+            Fighter_Stamina();  // Take away stamina
         }
 
-        if(other.gameObject.tag == "NPC_Elbow")
+        if(other.gameObject.tag == "NPC_Elbow")     // if hit by tag elbow
         {
-            anim.SetBool("Stomach_Hit", true);
-            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);
-            Fighter_Stamina();
+            anim.SetBool("Stomach_Hit", true);  // head hit true
+            GetComponent<Rigidbody>().AddForce(-transform.forward * pushForce * pushBack);  // push gameObject back
+            Fighter_Stamina();  // Take away stamina
         }
 
-        if (other.gameObject.tag == "Bottle")
-            stunned = true;
+        if (other.gameObject.tag == "Bottle")   // if hit by the bottle GameObject 
+            stunned = true;     // We are now stunned
     }
 
     private void OnTriggerExit(Collider other)
